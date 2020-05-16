@@ -127,8 +127,8 @@ int main(int argc, char **argv) {
 
     // Keep tracking until matching a EOF.
     while((!eof_flag) && (token = yylex())) {
-        char* str = (char*) (line->tail->value);
-        
+        char* str = (line->tail) ? (char*) (line->tail->value) : NULL;
+
         switch(token) {
             case DELIMITER:     printf("<'%s'>\n", str); 
                                 break;
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
             case IDENTIFIER:    sym_insert(str);  
                                 printf("<id: %s>\n", str); 
                                 break;
-            default:            eof_flag = 1; 
+            default:            eof_flag = 1;
                                 break;
         }
     }
