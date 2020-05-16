@@ -8,7 +8,7 @@ default: lexer
 	gcc -c $< -o $@
 
 lexer: $(OBJECTS)
-	flex main.l
+	lex main.l
 	gcc $(OBJECTS) lex.yy.c -o $@ -lfl
 
 clean:
