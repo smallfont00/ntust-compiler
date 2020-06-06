@@ -1,20 +1,23 @@
-HEADERS = list.h hashtable.h
-OBJECTS = list.o hashtable.o
+HEADERS = list.h hashtable.h symbol_table.h
+OBJECTS = list.o hashtable.o symbol_table.o
 
-default: lexer
+CC = g++
+CFLAGS = -g -std=c++17 -O3
+
+default: parser
 
 
 %.o: %.cpp %(HEADERS)
-	gcc -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
-lexer: $(OBJECTS)
-	bison -d -v main.y
-	flex main.l
-	gcc -g $(OBJECTS) lex.yy.c main.tab.c  -o $@ -lfl
+parser: $(OBJECTS)
+	bison -d -v parser.y
+	flex lexer.l
+	$(CC) $(CFLAGS) $(OBJECTS) -Wall lex.yy.c parser.tab.c -o $@ -lfl
 
 clean:
 	-rm -f $(OBJECTS)
-	-rm -f lexer
+	-rm -f parser
 	-rm -f lex.yy.c
-	-rm -f main.tab.c
-	-rm -f main.tab.h
+	-rm -f parser.tab.c
+	-rm -f parser.tab.h

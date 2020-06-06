@@ -2,11 +2,17 @@
 %x multiline_comment
 
 %{
+
+extern "C"
+{
+    int yylex(void);
+}
+
 #include "list.h"
 #include "hashtable.h"
 #include <string.h>
 #include <stdlib.h>
-#include "main.tab.h"
+#include "parser.tab.h"
 
 #define BUFFER_LEN 8192
 
@@ -137,7 +143,7 @@ RB_comment     "*/"
 "read"          { INSERT; return READ; }
 
 {integer}       {INSERT; return V_INT; }
-
+"'"{alpha}"'"   {INSERT; return V_CHAR;}
 {float}         {INSERT; return V_FLOAT;}
 {string}        {INSERT_STR; return V_STRING;}
 {identifier}    {INSERT; return IDENTIFIER;}
@@ -150,7 +156,8 @@ RB_comment     "*/"
 <multiline_comment>.               {printf("%s", yytext); strcat(text, yytext);}
 <multiline_comment>{RB_comment}    {printf("%s", yytext); strcat(text, yytext); BEGIN INITIAL;}
 
-. {strcat(text, yytext); printf(" ", yytext);}
+{whitespace} {strcat(text, yytext); printf("%s", yytext);}
+. {strcat(text, yytext); printf("%s", yytext); return *yytext;}
 \n {LINE_SKIP; return LINE;}
 
 <<EOF>>             {
@@ -166,10 +173,6 @@ void string_toupper(char* str) {
             *str = *str - 'a' + 'A';
         }
     }
-}
-
-void return_line_token(int flag) {
-    return_flag = flag;
 }
 
 /*

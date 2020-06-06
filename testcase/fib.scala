@@ -28,7 +28,7 @@ object fib
       FNminus1 = temp
       n = n - 1
     }
-    
+    var a = c'
     for (a <- 10 to 100) print(a)
     
     // print result

@@ -58,7 +58,7 @@ example
     println("Hello World") 
     print("fuck") 
     var iii = 1
-    val iii 
+    var iii : int
     var jjj = 2
   }
 }

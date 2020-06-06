@@ -1,7 +1,17 @@
 %{
+
+extern "C"
+{
+    int yyparse(void);
+    int yylex(void);
+    void yyerror(char*);
+}
+
+
 #include <stdio.h>
 #include "list.h"
 #include "hashtable.h"
+#include "symbol_table.h"
 
 int ident = 0;
 
@@ -20,11 +30,12 @@ extern List *context;
 // Linked list structure of tokens over a sigle line of code. (Linked list structure of line)
 extern List *line;
 
-extern void return_line_token(int flag);
-
 extern int context_len;
 
 extern char *yytext;
+
+Symbol_table *object_scope = new Symbol_table();
+Symbol_table *current_scope = new Symbol_table();
 
 %}
 
@@ -35,7 +46,7 @@ extern char *yytext;
 %token EOL LINE
 %token D_COMMA D_COLON D_PERIOD D_SEMICOLON D_LPAREN D_RPAREN D_LSQURE D_RSQURE D_LBRACK D_RBRACK D_LARROW
 %token ASSIGN
-%token V_INT V_BOOL V_FLOAT V_STRING
+%token V_INT V_BOOL V_FLOAT V_STRING V_CHAR
 %token READ
 
 %left OR
@@ -110,7 +121,6 @@ statement
 
 val_dec
     : VAL IDENTIFIER type ASSIGN expr
-    | VAL IDENTIFIER type
     ;
 
 var_dec
@@ -126,7 +136,7 @@ option_expr: /*empty*/
 
 type: /*empty*/ | D_COLON primitive ;
 
-primitive: INT | FLOAT | BOOLEAN | STRING;
+primitive: INT | FLOAT | BOOLEAN | STRING | CHAR;
 
 block: ol D_LBRACK ol statement_list ol D_RBRACK;
 
@@ -162,6 +172,7 @@ value
     | IDENTIFIER
     | V_STRING
     | D_LPAREN value D_RPAREN
+    | V_CHAR {P(CHAR)}
     ;
 
 loop
@@ -182,7 +193,10 @@ condition
 %%
 
 int main(int argc, char **argv) {
-    return_line_token(0);
+    Symbol_table* sym_t = new Symbol_table();
+
+    sym_t->add("a", new type<int>(12));
+    
     sym_create();
 
     // Initialize both Linked list structure of page and line.
