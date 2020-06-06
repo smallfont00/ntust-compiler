@@ -14,11 +14,22 @@ object fib
   def main () {
     // compute the nth Fibonacci number
     while (n > 2) {
+      var a = 0
       temp = Fn
+      while (n > 2) {
+        var a = 0
+        temp = Fn
+        Fn = Fn + FNminus1
+        FNminus1 = temp
+        n = n - 1
+      }
+      temp()
       Fn = Fn + FNminus1
       FNminus1 = temp
       n = n - 1
     }
+    
+    for (a <- 10 to 100) print(a)
     
     // print result
     print ("Result of computation: ")
