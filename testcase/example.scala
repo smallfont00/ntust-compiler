@@ -10,55 +10,54 @@ example
   /*
   
   def*/
-  def add (a: int, b: int /* fusdfaasd*/) : int{ ((a)) 
-  a
+  def add (a: int, b: int /* fusdfaasd*/) : int{ 
+    ((a)) 
+    a
     {{{}}}
     a
     a 
     a
-    var a = 2 
+    //var a = 2 
     
-    var b = 1
+    //var b = 1
     return a+b
   } 
   
   def add (a: int, b: int) : int
   {
-    var a = 2 
-    return a+b
+    return a + b
   }
   
   // main statements
   def main()
   { 
+    def aaaaa(a:int, b:int) : int{ a = 2}
     var c:int [12]
     {
-    c
+    var c : int
      = 
      aaaaa
      (
        1,
      1 + 
      1
-     ) + 
-     1}
-
-    {c = add(a, 10)
+     ) + 1
     }
-    if (x)
-    if (y) print(e)
-    else print(d)
 
-    if (c > 10) {println(-c)
+    {c[12] = add(a, 10)
+    }
+    if (c[1] < 0)
+    if (c[12]> 12) print(c)
+    else print(c)
+    if (!true) {println(-c[12])
     } 
       else {print (c)
-    print(d)
-    print(e)} 
+    print(a)
+    print("fff")} 
     {}
     println("Hello World") 
     print("fuck") 
     var iii = 1
-    var iii : int
     var jjj = 2
   }
 }

@@ -1,23 +1,27 @@
-HEADERS = list.h hashtable.h symbol_table.h
-OBJECTS = list.o hashtable.o symbol_table.o
+OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
+HEADERS = $(wildcard *.h)
 
-CC = g++
-CFLAGS = -g -std=c++17 -O3
+CXX = g++
+CXXFLAGS = -g -std=c++17 -O3
 
-default: parser
+default: parser clean
 
+PREREQUIRE = parser.o lexer.o
 
 %.o: %.cpp %(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-parser: $(OBJECTS)
-	bison -d -v parser.y
-	flex lexer.l
-	$(CC) $(CFLAGS) $(OBJECTS) -Wall lex.yy.c parser.tab.c -o $@ -lfl
+%.cpp: %.yy
+	bison --output=$*.cpp --defines=$*.h -v $*.yy
+
+%.cpp: %.lex
+	flex  --outfile=$*.cpp --header-file=$*.h $*.lex
+
+parser: $(OBJECTS) $(PREREQUIRE)
+	$(CXX) $(CXXFLAGS) $(PREREQUIRE) $(OBJECTS) -o $@ -lfl
 
 clean:
 	-rm -f $(OBJECTS)
-	-rm -f parser
-	-rm -f lex.yy.c
-	-rm -f parser.tab.c
-	-rm -f parser.tab.h
+	-rm -f $(PREREQUIRE)
+	-rm -f parser.h
+	-rm -f lexer.h

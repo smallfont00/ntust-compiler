@@ -5,27 +5,52 @@
 #include <map>
 #include <vector>
 
-template <>
-class type<func> : public type_, public Symbol_table {
-   private:
-    type_* _ret_val;
-    std::vector<type_*> params;
-
-   public:
-    type(Symbol_table* sym_t, type_* _ret_val, std::vector<std::pair<std::string, type_*>> params) : Symbol_table(sym_t), _ret_val(_ret_val) {
-        for (auto [key, ty] : params) {
-            this->params.push_back(ty);
-            table[key] = ty;
-        }
-    };
-
-    type_* ret_val() { return _ret_val; }
-
-    template <class T>
-    bool check_return() {
-        return type_cast<T>(ret_val) != nullptr;
+bool dynamic_type_check(type_* first, int code) {
+    switch (code) {
+        case TInt:
+            return type_check<int>(first);
+        case TFloat:
+            return type_check<float>(first);
+        case TString:
+            return type_check<std::string>(first);
+        case TBoolean:
+            return type_check<bool>(first);
+        case TChar:
+            return type_check<char>(first);
+        default:
+            return false;
     }
 };
+
+type_* dynamic_type(int code) {
+    switch (code) {
+        case TInt:
+            return new type<int>();
+        case TFloat:
+            return new type<float>();
+        case TString:
+            return new type<std::string>();
+        case TBoolean:
+            return new type<bool>();
+        case TChar:
+            return new type<char>();
+        default:
+            return new type<void>();
+    }
+};
+
+bool same_type(type_* a, type_* b) {
+    return dynamic_type_code(a) == dynamic_type_code(b);
+}
+
+int dynamic_type_code(type_* ty) {
+    if (auto t = type_check<int>(ty)) return TInt;
+    if (auto t = type_check<float>(ty)) return TFloat;
+    if (auto t = type_check<std::string>(ty)) return TString;
+    if (auto t = type_check<bool>(ty)) return TBoolean;
+    if (auto t = type_check<char>(ty)) return TChar;
+    return 0;
+}
 
 template <>
 type<func>* value_cast(type_* ty) {
@@ -62,7 +87,14 @@ bool Symbol_table::declare(const std::string& name, type_* ty) {
     return true;
 }
 
-/*
+void Symbol_table::merge_from(const Symbol_table* other) {
+    for (auto [key, ty] : other->table) {
+        this->table[key] = ty;
+    }
+}
+
+#define WRONG wrong(__LINE__)
+
 int test_symbol() {
     using string = std::string;
     auto wrong = [](int code) { printf("Wrong at line: %d\n", code); };
@@ -74,48 +106,81 @@ int test_symbol() {
     sym_t->add("c", new type(string("I'm string")));
     sym_t->add("d", new type(1.2f));
 
-    type_* x = new type<int>();
-    type_* y = new type<float>();
-    type_* z = new type<bool>();
+    type_* x = TYPE(1);
+    type_* y = DEFINE(float, 1);
+    type_* z = DECLARE(bool);
 
-    type<func>* fun = new type<func>(sym_t,
-                                     new type<int>(),
-                                     {{"x", x}, {"y", y}});
-    fun->add("z", z);
+    new type<func>(new type<int>(), {{"x", x}, {"y", y}});
 
-    if (auto t = x->test<float>(); t) wrong(__LINE__);
+    auto fun = DEFINE(func,
+                      new type<int>(),
+                      {{"x", x}, {"y", y}});
 
-    if (auto t = y->test<float>(); !t) wrong(__LINE__);
+    //fun->add("z", z);
 
-    if (auto t = type_cast<int>(sym_t->find("a")); t->get() != 12) wrong(__LINE__);
+    type_* w = TYPE(2.0f);
 
-    if (auto t = type_cast<bool>(sym_t->find("b")); t->get() != false) wrong(__LINE__);
+    if (auto t = type_check<string, char>(x, y, z); t) WRONG;
 
-    if (auto t = type_cast<string>(sym_t->find("c")); t->get() != "I'm string") wrong(__LINE__);
+    if (auto t = type_check<int, char>(x, y, z); !t) WRONG;
 
-    if (auto t = type_cast<float>(sym_t->find("d")); t->get() != 1.2f) wrong(__LINE__);
+    if (auto t = type_check<char, float>(x, y, z); !t) WRONG;
 
-    if (auto t = fun->check<int>("x"); !t) wrong(__LINE__);
+    if (auto t = type_check<int>(w); t) WRONG;
 
-    if (auto t = fun->check<float>("y"); !t) wrong(__LINE__);
+    if (auto t = type_check<int, string>(w); t) WRONG;
 
-    if (auto t = fun->check<bool>("z"); !t) wrong(__LINE__);
+    if (auto t = type_check<float, string>(w); !t) WRONG;
 
-    if (auto t = fun->check<int, bool>("a"); !t) wrong(__LINE__);
+    if (auto t = type_check<string, float>(w); !t) WRONG;
 
-    if (auto t = fun->check<bool, int>("b"); !t) wrong(__LINE__);
+    if (auto t = type_check<int>(x, w); !t) WRONG;
 
-    if (auto t = fun->check<string, int>("c"); !t) wrong(__LINE__);
+    if (auto t = type_check<int, string>(y, w); t) WRONG;
 
-    if (auto t = fun->check<int>("d"); t) wrong(__LINE__);
+    if (auto t = type_check<float, string>(z, w); !t) WRONG;
 
-    if (auto t = fun->check<float>("e"); t) wrong(__LINE__);
+    if (auto t = type_check<string, float>(w, y); !t) WRONG;
 
-    if (auto t = fun->check<bool>("f"); t) wrong(__LINE__);
+    if (auto t = x->test<float>(); t) WRONG;
 
-    if (auto t = fun->check<float, string>("x"); t) wrong(__LINE__);
+    if (auto t = y->test<float>(); !t) WRONG;
 
-    if (auto t = fun->check<int, char>("y"); t) wrong(__LINE__);
+    if (auto t = type_cast<int>(sym_t->find("a")); t->get() != 12) WRONG;
 
-    if (auto t = fun->check<string, int>("z"); t) wrong(__LINE__);
-}*/
+    if (auto t = type_cast<bool>(sym_t->find("b")); t->get() != false) WRONG;
+
+    if (auto t = type_cast<string>(sym_t->find("c")); t->get() != "I'm string") WRONG;
+
+    if (auto t = type_cast<float>(sym_t->find("d")); t->get() != 1.2f) WRONG;
+    /*
+    if (auto t = fun->check<int>("x"); !t) WRONG;
+
+    if (auto t = fun->check<float>("y"); !t) WRONG;
+
+    if (auto t = fun->check<bool>("z"); !t) WRONG;
+
+    if (auto t = fun->check<int, bool>("a"); !t) WRONG;
+
+    if (auto t = fun->check<bool, int>("b"); !t) WRONG;
+
+    if (auto t = fun->check<string, int>("c"); !t) WRONG;
+
+    if (auto t = fun->check<int>("d"); t) WRONG;
+
+    if (auto t = fun->check<float>("e"); t) WRONG;
+
+    if (auto t = fun->check<bool>("f"); t) WRONG;
+
+    if (auto t = fun->check<float, string>("x"); t) WRONG;
+
+    if (auto t = fun->check<int, char>("y"); t) WRONG;
+
+    if (auto t = fun->check<string, int>("z"); t) WRONG;
+    */
+}
+/*
+int main() {
+    test_symbol();
+}
+*/
