@@ -3,20 +3,27 @@
  * This test program computes the Nth Fibonacci number
  */
 
-object fib
-{
-  // variables
-  var n: int = 8
-  var Fn: float = 1.0
-  var FNminus1: int = 12
-  var temp: int
-  def fuck(a:int, b:float) {
-    return "FUCK"
-  }
 
+
+   object 
+fib 
+{
+  var n: int = 8
+  var abc : string = "fuck"
+  var Fn: float = 1.0
+
+
+  var FNminus1: int = 12
+  var temp: int = 1
+  def fuck(a:int, b:float) : float 
+  {
+    {}
+    return 1.0
+    var iii = 1 }
   def main () {
     // compute the nth Fibonacci number
     while (n > 2) {
+      var astringkkksdfasdfasdfasdf : string = "fuck"
       var qqq : int [12]
       qqq[1] = 12
       var a : int

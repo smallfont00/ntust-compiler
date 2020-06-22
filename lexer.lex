@@ -80,49 +80,49 @@ RB_comment     "*/"
 
 %%
 
-[\n ]*","[\n ]*     {INSERT; return D_COMMA    ;}
-[\n ]*":"[\n ]*     {INSERT; return D_COLON    ;}
-[\n ]*"."[\n ]*     {INSERT; return D_PERIOD   ;}
-[\n ]*";"[\n ]*     {INSERT; return D_SEMICOLON;}
-[\n ]*"("[\n ]*     {INSERT; return D_LPAREN   ;}
-[\n ]*")"           {INSERT; return D_RPAREN   ;}
-[\n ]*"["[\n ]*     {INSERT; return D_LSQURE   ;}
-[\n ]*"]"           {INSERT; return D_RSQURE   ;}
-[\n ]*"<-"[\n ]*    {INSERT; return D_LARROW   ;}
+","     {INSERT; return D_COMMA    ;}
+":"     {INSERT; return D_COLON    ;}
+"."     {INSERT; return D_PERIOD   ;}
+";"     {INSERT; return D_SEMICOLON;}
+"("     {INSERT; return D_LPAREN   ;}
+")"           {INSERT; return D_RPAREN   ;}
+"["     {INSERT; return D_LSQURE   ;}
+"]"           {INSERT; return D_RSQURE   ;}
+"<-"    {INSERT; return D_LARROW   ;}
 
-[\n ]*"="[\n ]*     {INSERT; return ASSIGN;}
+"="     {INSERT; return ASSIGN;}
 
 "{"                 {INSERT; return D_LBRACK   ;}
 "}"                 {INSERT; return D_RBRACK   ;}
 
 
-"+"[\n ]*     {INSERT; return ADD;}
-"-"[\n ]*     {INSERT; return MINUS;}
-"*"[\n ]*     {INSERT; return MUL;}
-"/"[\n ]*     {INSERT; return DIV;}
-"%"[\n ]*     {INSERT; return MOD;}
-"<"[\n ]*     {INSERT; return LT ;}
-"<="[\n ]*    {INSERT; return LE ;}
-">="[\n ]*    {INSERT; return BE ;}
-">"[\n ]*     {INSERT; return BT ;}
-"=="[\n ]*    {INSERT; return EQ ;}
-"!="[\n ]*    {INSERT; return NE ;}
-"&&"[\n ]*    {INSERT; return AND;}
-"||"[\n ]*    {INSERT; return OR ;}
-"!"[\n ]*     {INSERT; return NOT;}
+"+"     {INSERT; return ADD;}
+"-"     {INSERT; return MINUS;}
+"*"     {INSERT; return MUL;}
+"/"     {INSERT; return DIV;}
+"%"     {INSERT; return MOD;}
+"<"     {INSERT; return LT ;}
+"<="    {INSERT; return LE ;}
+">="    {INSERT; return BE ;}
+">"     {INSERT; return BT ;}
+"=="    {INSERT; return EQ ;}
+"!="    {INSERT; return NE ;}
+"&&"    {INSERT; return AND;}
+"||"    {INSERT; return OR ;}
+"!"     {INSERT; return NOT;}
 
-[\n ]*"int"           { INSERT; yylval.__int = TInt; return INT; }
-[\n ]*"float"         { INSERT; yylval.__int = TFloat; return FLOAT; }
-[\n ]*"string"        { INSERT; yylval.__int = TString; return STRING; }
-[\n ]*"boolean"       { INSERT; yylval.__int = TBoolean; return BOOLEAN; }
-[\n ]*"char"          { INSERT; yylval.__int = TChar; return CHAR; }
+"int"           { INSERT; yylval.__int = TInt; return INT; }
+"float"         { INSERT; yylval.__int = TFloat; return FLOAT; }
+"string"        { INSERT; yylval.__int = TString; return STRING; }
+"boolean"       { INSERT; yylval.__int = TBoolean; return BOOLEAN; }
+"char"          { INSERT; yylval.__int = TChar; return CHAR; }
 
-[\n ]*"case"          { INSERT; return CASE; }
-[\n ]*"class"         { INSERT; return CLASS; }
-[\n ]*"else"          { INSERT; return ELSE; }
-[\n ]*"object"        { INSERT; return OBJECT; }
-[\n ]*"to"            { INSERT; return TO; }
-[\n ]*"type"          { INSERT; return TYPE; }
+"case"          { INSERT; return CASE; }
+"class"         { INSERT; return CLASS; }
+[\n ]*"else"[ \n]+          { INSERT; return ELSE; }
+"object"        { INSERT; return OBJECT; }
+"to"            { INSERT; return TO; }
+"type"          { INSERT; return TYPE; }
 
 "def"                   { INSERT; return DEF; }
 "break"                 { INSERT; return BREAK; }

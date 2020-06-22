@@ -96,14 +96,18 @@ void table_swap_out() {
 %type <__params> parameters parameters_
 %type <__args> arguments arguments_
 %type <__sym_t> block
+%type <__str> identifer
 %%
 
 /* Program Start State */
-program: OBJECT ol          
-        IDENTIFIER ol       
-        D_LBRACK            { current_scope = global_scope;}
-        declaration_list    
-        D_RBRACK ol;        
+program: ol OBJECT          
+         identifer    
+         ol D_LBRACK            { current_scope = global_scope;}
+         ol declaration_list    
+         ol D_RBRACK
+         ol;        
+
+identifer: ol IDENTIFIER    {$$ = $2;};
 
 /* Accept one or more line */
 line: LINE ol;
@@ -114,21 +118,21 @@ ol: /*empty*/
     ;
 
 /* Accept a collection of declaration, Each declaration must seperate by lines */
-declaration_list: /*empty*/ 
-    | declaration
-    | declaration_list line declaration_list 
+declaration_list: /*empty*/                     {printf("<C0>");}
+    | declaration                               {printf("<C1>");}
+    | declaration_list line declaration         {printf("<C2>");}
     ;
 
 /* 4 difference type of declaration */
 declaration
-    : val_dec                   {/*P(Q)*/}
-    | var_dec                   {/*P(W)*/}
-    | arr_dec                   {/*P(E)*/}
-    | fun_dec                   {/*P(R)*/}
+    : val_dec                   {printf("<A1>");}
+    | var_dec                   {printf("<A2>");}
+    | arr_dec                   {printf("<A3>");}
+    | fun_dec                   {printf("<A4>");}
     ;
 
 /* Declaration of function */
-fun_dec: DEF IDENTIFIER D_LPAREN parameters D_RPAREN type 
+fun_dec: DEF identifer D_LPAREN parameters D_RPAREN type 
         {   /* Notice that the parameters is in inverse order, we must reverse it first. */
 
             std::reverse($4->begin(), $4->end()); 
@@ -145,7 +149,7 @@ fun_dec: DEF IDENTIFIER D_LPAREN parameters D_RPAREN type
 
 /* Formal parameters */
 parameters: /*empty*/ { $$ = new std::vector<std::pair<std::string, type_*>>(); }
-    | IDENTIFIER type parameters_ {
+    | identifer type parameters_ {
                                   $$ = $3;
                                   $$->push_back({*($1), dynamic_type($2)});
                                   }
@@ -153,7 +157,7 @@ parameters: /*empty*/ { $$ = new std::vector<std::pair<std::string, type_*>>(); 
 
 /* Formal parameters */
 parameters_: /*empty*/ {$$ =  new std::vector<std::pair<std::string, type_*>>();}
-    | D_COMMA IDENTIFIER type parameters_  { $$ = $4; $$->push_back({*($2), dynamic_type($3)}); }
+    | D_COMMA identifer type parameters_  { $$ = $4; $$->push_back({*($2), dynamic_type($3)}); }
     ;
 
 /* Actual parameters */
@@ -192,19 +196,19 @@ statement
     ; 
 
 val_dec
-    : VAL IDENTIFIER type ASSIGN expr       { 
+    : VAL identifer type ASSIGN expr       { 
                                             if (($3 != 0) && !same_type(dynamic_type($3), $5)) W("Definition Type Not Compatible");
                                             if (!current_scope->declare(*($2), $5)) W("Re-define Variable Is Not Allow");
                                             }
     ;
 
 var_dec
-    : VAR IDENTIFIER type ASSIGN expr       { 
+    : VAR identifer type ASSIGN expr       { 
                                             $5->is_constant = false;
                                             if (($3 != 0) && !same_type(dynamic_type($3), $5)) W("Definition Type Not Compatible");
                                             if (!current_scope->declare(*($2), $5)) W("Re-define Variable Is Not Allow");
                                             }
-    | VAR IDENTIFIER type                   { 
+    | VAR identifer type                   { 
                                             if ($3 == 0) W("Variable Declaration Should Be Typed");
                                             auto t = dynamic_type($3);
                                             t->is_constant = false;
@@ -212,7 +216,7 @@ var_dec
                                             }
     ;
 
-arr_dec: VAR IDENTIFIER type D_LSQURE expr D_RSQURE
+arr_dec: VAR identifer type D_LSQURE expr D_RSQURE
                                             {
                                             if (!type_check<int>($5)) W("Range Must Be Int");
                                             auto t = dynamic_type($3);
@@ -234,37 +238,37 @@ type: /*empty*/ {$$ = 0;} | D_COLON primitive { $$ = $2;};
 primitive: INT | FLOAT | BOOLEAN | STRING | CHAR;
 
 /* Block */
-block: ol D_LBRACK ol           {table_swap_in();}
-       statement_list ol 
-       D_RBRACK                 {$$ = current_scope; table_swap_out();}
+block: ol D_LBRACK              {table_swap_in();}
+       ol statement_list 
+       ol D_RBRACK                 {$$ = current_scope; table_swap_out();}
     ;
 
 /* Parse Grammar */
 /* Type checking is outside the grammar */
 /* Association is define at the first section using %left, %right */
 expr
-    : value                         {$$ = $1;}        
-    | NOT expr                      { if(!type_check<bool>($2)) W("Operation Error. Must Be Boolean"); $$ = $2; }            
-    | D_LPAREN expr D_RPAREN        {$$ = $2;}                            
-    | expr LT expr                  { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = DECLARE(bool); }                
-    | expr LE expr                  { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = DECLARE(bool); }                
-    | expr EQ expr                  { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = DECLARE(bool); }                
-    | expr BE expr                  { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = DECLARE(bool); }                
-    | expr BT expr                  { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = DECLARE(bool); }                
-    | expr NE expr                  { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = DECLARE(bool); }                
-    | expr AND expr                 { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = DECLARE(bool); }                
-    | expr OR expr                  { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = DECLARE(bool); }                
-    | expr MUL expr                 { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = $1; }                
-    | expr DIV expr                 { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = $1; }                
-    | expr ADD expr                 { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = $1; }                
-    | expr MINUS expr               { if(!same_type($1, $3)) W("Operation Error. Must Be Number"); $$ = $1; }                    
-    | expr MOD expr                 { if(!type_check<int>($1, $3)) W("Operation Error. Must Be Int"); $$ = $1; }                
-    | MINUS expr %prec UMINUS       { if(!type_check<int, float>($2)) W("Operation Error. Must Be Number"); $$ = $2; }                            
+    : value                         { $$ = $1;}        
+    | NOT expr                      { if(!type_check<bool>($2)) W("Must Be Boolean"); $$ = $2; }            
+    | D_LPAREN expr D_RPAREN        { $$ = $2;}                            
+    | expr LT expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
+    | expr LE expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
+    | expr EQ expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
+    | expr BE expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
+    | expr BT expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
+    | expr NE expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
+    | expr AND expr                 { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
+    | expr OR expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
+    | expr MUL expr                 { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = $1; }                
+    | expr DIV expr                 { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = $1; }                
+    | expr ADD expr                 { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = $1; }                
+    | expr MINUS expr               { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = $1; }                    
+    | expr MOD expr                 { if(!type_check<int>($1, $3)) W("Must Be Int"); $$ = $1; }                
+    | MINUS expr %prec UMINUS       { if(!type_check<int, float>($2)) W("Must Be Number"); $$ = $2; }                            
     ;
 
 number
-    : V_INT {$$= new type($1);} 
-    | V_FLOAT {$$= new type($1);};
+    : V_INT {$$= DEFINE(int, $1);} 
+    | V_FLOAT {$$= DEFINE(float, $1);};
 
 func_call: variable D_LPAREN arguments D_RPAREN { 
                                                     auto t = type_cast<func>($1); 
@@ -280,12 +284,12 @@ value
     | number                                        {$$ = $1;}
     | func_call                                     {$$ = $1;}
     | variable                                      {$$ = $1;}
-    | V_STRING                                      {$$ = TYPE($1);}
+    | V_STRING                                      {$$ = TYPE(*$1);}
     | V_CHAR                                        {$$ = TYPE($1);}
     ;
 
 variable
-    : IDENTIFIER                                    { 
+    : identifer                                    { 
                                                     $$ = current_scope->find_all(*($1)); 
                                                     if($$ == nullptr) W("Variable Not Found");
                                                     }
@@ -303,11 +307,11 @@ loop
 
 
 if_: IF D_LPAREN expr D_RPAREN ol statement;
-else_: ELSE ol statement;
+else_: ELSE statement;
 
 condition
-    : if_             %prec LOWER_THAN_ELSE
-    | if_ else_                               
+    : if_             %prec LOWER_THAN_ELSE         {printf("<IF>");}
+    | if_ else_                                     {printf("<IF_ELSE>");}
     ;
 
 
@@ -315,5 +319,6 @@ condition
 
 void yyerror(char *s){
     fprintf(stderr, "str: %s\n", yytext);
+    fprintf(stderr, "first ascii: %d\n", *yytext);
     fprintf(stderr, "%s\n", s);
 }
