@@ -1,0 +1,70 @@
+class fibonacci
+{
+method public static int fib(int)
+max_stack 24
+max_locals 24
+{
+iload 0
+ldc 0
+isub
+ifle L2
+iconst_0
+goto L3
+L2:
+iconst_1
+L3:
+ifeq Lfalse0
+ldc 0
+ireturn
+Lfalse0:
+iload 0
+ldc 1
+isub
+ifeq L6
+iconst_0
+goto L7
+L6:
+iconst_1
+L7:
+iload 0
+ldc 2
+isub
+ifeq L8
+iconst_0
+goto L9
+L8:
+iconst_1
+L9:
+ior
+ifeq Lfalse4
+ldc 1
+ireturn
+Lfalse4:
+iload 0
+ldc 1
+isub
+invokestatic int fibonacci.fib(int)
+iload 0
+ldc 2
+isub
+invokestatic int fibonacci.fib(int)
+iadd
+ireturn
+iconst_0
+ireturn
+}
+method public static void main(java.lang.String [])
+max_stack 20
+max_locals 20
+{
+getstatic java.io.PrintStream java.lang.System.out
+ldc "Result of computation: "
+invokevirtual void java.io.PrintStream.print(java.lang.String)
+getstatic java.io.PrintStream java.lang.System.out
+ldc 8
+invokestatic int fibonacci.fib(int)
+invokevirtual void java.io.PrintStream.println(int)
+return
+}
+}
+

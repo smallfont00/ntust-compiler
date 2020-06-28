@@ -13,7 +13,6 @@ extern "C"
 #include <string.h>
 #include <stdlib.h>
 #include "parser.h"
-#include "symbol_table.h"
 
 #define BUFFER_LEN 8192
 
@@ -47,9 +46,9 @@ int return_flag = 0;
 //   * INSERT:          Maintain the text buffer and Linked list structure of page.
 //   * INSERT_STR:      Same as INSERT but cut off the two double quotes of string when inserting to <line>;
 //   * LINE:            Maintain and Echo the line message. 
-#define INSERT      { strcat(text, yytext); printf("%s", yytext); insert(line, yytext); }
-#define INSERT_STR  { strcat(text, yytext); printf("%s", yytext); size_t len = strlen(yytext); memcpy(str_buf, yytext + 1, len - 2); str_buf[len] = '\0'; insert(line, str_buf);}
-#define LINE_SKIP   { strcat(text, yytext); printf("%s", yytext); context_len++; /*printf("%d: %s", context_len, text);*/ text[0] = '\0';}
+#define INSERT      { strcat(text, yytext); fprintf(stderr,"%s", yytext); insert(line, yytext); }
+#define INSERT_STR  { strcat(text, yytext); fprintf(stderr,"%s", yytext); insert(line, yytext); }
+#define LINE_SKIP   { strcat(text, yytext); fprintf(stderr,"%s", yytext); context_len++; /*printf("%d: %s", context_len, text);*/ text[0] = '\0';}
 
 // The number of line.
 int context_len = 0;
@@ -64,9 +63,9 @@ operator    "+"|"-"|"*"|"/"|"%"|"<"|"<="|">="|">"|"=="|"!="|"&&"|"||"|"!"
 keyword "boolean"|"break"|"char"|"case"|"class"|"continue"|"def"|"do"|"else"|"exit"|"float"|"for"|"if"|"int"|"null"|"object"|"print"|"println"|"repeat"|"return"|"string"|"to"|"type"|"val"|"var"|"while"
 
 digit   [0-9]
-integer {digit}+
+integer ([1-9]{digit}*)|[0]
 
-float   ("+"|"-")?(({digit}*[.]{digit}+)|({digit}+[.]{digit}*))(e("+"|"-")?{integer})?
+float   (({digit}*[.]{digit}+)|({digit}+[.]{digit}*))(e("+"|"-")?{integer})?
 string  \"([^"\\]|\\.|\"\")*\"
 
 alpha   [A-Za-z]
@@ -85,15 +84,15 @@ RB_comment     "*/"
 "."     {INSERT; return D_PERIOD   ;}
 ";"     {INSERT; return D_SEMICOLON;}
 "("     {INSERT; return D_LPAREN   ;}
-")"           {INSERT; return D_RPAREN   ;}
+")"     {INSERT; return D_RPAREN   ;}
 "["     {INSERT; return D_LSQURE   ;}
-"]"           {INSERT; return D_RSQURE   ;}
+"]"     {INSERT; return D_RSQURE   ;}
 "<-"    {INSERT; return D_LARROW   ;}
 
 "="     {INSERT; return ASSIGN;}
 
-"{"                 {INSERT; return D_LBRACK   ;}
-"}"                 {INSERT; return D_RBRACK   ;}
+"{"     {INSERT; return D_LBRACK   ;}
+"}"     {INSERT; return D_RBRACK   ;}
 
 
 "+"     {INSERT; return ADD;}
@@ -111,55 +110,56 @@ RB_comment     "*/"
 "||"    {INSERT; return OR ;}
 "!"     {INSERT; return NOT;}
 
-"int"           { INSERT; yylval.__int = TInt; return INT; }
-"float"         { INSERT; yylval.__int = TFloat; return FLOAT; }
-"string"        { INSERT; yylval.__int = TString; return STRING; }
-"boolean"       { INSERT; yylval.__int = TBoolean; return BOOLEAN; }
-"char"          { INSERT; yylval.__int = TChar; return CHAR; }
+"int"                       { INSERT; return INT; }
+"float"                     { INSERT; return FLOAT; }
+"string"                    { INSERT; return STRING; }
+"boolean"                   { INSERT; return BOOLEAN; }
+"char"                      { INSERT; return CHAR; }
 
-"case"          { INSERT; return CASE; }
-"class"         { INSERT; return CLASS; }
+"case"                      { INSERT; return CASE; }
+"class"                     { INSERT; return CLASS; }
 [\n ]*"else"[ \n]+          { INSERT; return ELSE; }
-"object"        { INSERT; return OBJECT; }
-"to"            { INSERT; return TO; }
-"type"          { INSERT; return TYPE; }
+"object"                    { INSERT; return OBJECT; }
+"to"                        { INSERT; return TO; }
+"type"                      { INSERT; return TYPE; }
 
-"def"                   { INSERT; return DEF; }
-"break"                 { INSERT; return BREAK; }
-"continue"              { INSERT; return CONTINUE; }
-"do"                    { INSERT; return DO; }
-"exit"                  { INSERT; return EXIT; }
-"for"                   { INSERT; return FOR; }
-"if"                    { INSERT; return IF; }
-"null"                  { INSERT; return NULL_; }
-"print"                 { INSERT; return PRINT; }
-"println"               { INSERT; return PRINTLN; }
-"repeat"                { INSERT; return REPEAT; }
-"return"                { INSERT; return RETURN; }
-"val"                   { INSERT; return VAL; }
-"var"                   { INSERT; return VAR; }
-"while"                 { INSERT; return WHILE; }
+"def"                       { INSERT; return DEF; }
+"break"                     { INSERT; return BREAK; }
+"continue"                  { INSERT; return CONTINUE; }
+"do"                        { INSERT; return DO; }
+"exit"                      { INSERT; return EXIT; }
+"for"                       { INSERT; return FOR; }
+"if"                        { INSERT; return IF; }
+"null"                      { INSERT; return NULL_; }
+"print"                     { INSERT; return PRINT; }
+"println"                   { INSERT; return PRINTLN; }
+"repeat"                    { INSERT; return REPEAT; }
+"return"                    { INSERT; return RETURN; }
+"return"[ ]*[\n]            { INSERT; return EMPTY_RETURN;}
+"val"                       { INSERT; return VAL; }
+"var"                       { INSERT; return VAR; }
+"while"                     { INSERT; return WHILE; }
 
-"read"                  { INSERT; return READ; }
+"read"                      { INSERT; return READ; }
 
-"true"                  { INSERT; yylval.__bool = true; return TRUE; }
-"false"                 { INSERT; yylval.__bool = false; return FALSE; }
-{integer}               { INSERT; yylval.__int = atoi(yytext); return V_INT; }
-"'"({alpha}|{digit})"'"   { INSERT; yylval.__char = yytext[1]; return V_CHAR;}
-{float}                 { INSERT; yylval.__float = atof(yytext); return V_FLOAT;}
-{string}                { INSERT_STR; yylval.__str = new std::string(yytext); return V_STRING;}
-{identifier}            { INSERT; yylval.__str = new std::string(yytext); return IDENTIFIER;}
+"true"                      { INSERT; return TRUE; }
+"false"                     { INSERT; return FALSE; }
+{integer}                   { INSERT; yylval.__str = new std::string(yytext); return V_INT; }
+"'"({alpha}|{digit})"'"     { INSERT; yylval.__str = new std::string(yytext); return V_CHAR;}
+{float}                     { INSERT; yylval.__str = new std::string(yytext); (*(yylval.__str)) += "f"; return V_FLOAT;}
+{string}                    { INSERT; yylval.__str = new std::string(yytext); return V_STRING;}
+{identifier}                { INSERT; yylval.__str = new std::string(yytext); return IDENTIFIER;}
 
 {line_comment}  { LINE_SKIP;}
 
-{LB_comment}    { printf("%s", yytext); strcat(text, yytext);BEGIN multiline_comment;}
+{LB_comment}    { fprintf(stderr, "%s", yytext); strcat(text, yytext);BEGIN multiline_comment;}
 
 <multiline_comment>\n              {LINE_SKIP;}
-<multiline_comment>.               {printf("%s", yytext); strcat(text, yytext);}
-<multiline_comment>{RB_comment}    {printf("%s", yytext); strcat(text, yytext); BEGIN INITIAL;}
+<multiline_comment>.               {fprintf(stderr,"%s", yytext); strcat(text, yytext);}
+<multiline_comment>{RB_comment}    {fprintf(stderr,"%s", yytext); strcat(text, yytext); BEGIN INITIAL;}
 
-{whitespace} {strcat(text, yytext); printf("%s", yytext);}
-. {strcat(text, yytext); printf("%s", yytext); return *yytext;}
+{whitespace} {strcat(text, yytext); fprintf(stderr,"%s", yytext);}
+. {strcat(text, yytext); fprintf(stderr,"%s", yytext); return *yytext;}
 \n {LINE_SKIP; return LINE;}
 
 <<EOF>>             {

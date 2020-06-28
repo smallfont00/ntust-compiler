@@ -1,18 +1,18 @@
 #include <stdio.h>
 
+#include "AST.h"
 #include "hashtable.h"
 #include "list.h"
-#include "symbol_table.h"
 
+extern SymbolTable* current_scope;
 extern void lexer_init();
 extern int yyparse();
 
 int main(int argc, char** argv) {
     lexer_init();
 
-    Symbol_table* sym_t = new Symbol_table();
-
-    sym_t->add("a", new type<int>(12));
-
     yyparse();
+
+    auto obj = dynamic_cast<ObjectAST*>(current_scope);
+    std::cout << obj->codegen() << std::endl;
 }

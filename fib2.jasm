@@ -1,0 +1,206 @@
+class fib
+{
+field static int n = 8
+field static int Fn = 1
+field static int temp
+method public static int FIB(int)
+max_stack 36
+max_locals 36
+{
+ldc 1
+istore 1
+ldc 1
+istore 2
+Lbegin0:
+iload 0
+ldc 2
+isub
+ifgt L2
+iconst_0
+goto L3
+L2:
+iconst_1
+L3:
+ifeq Lexit1
+iload 1
+istore 3
+iload 1
+iload 2
+iadd
+istore 1
+iload 3
+istore 2
+iload 0
+ldc 1
+isub
+istore 0
+goto Lbegin0
+goto Lexit1
+Lexit1:
+iload 1
+ireturn
+iconst_0
+ireturn
+}
+method public static void main(java.lang.String [])
+max_stack 32
+max_locals 32
+{
+getstatic int fib.n
+invokestatic int fib.FIB(int)
+putstatic int fib.Fn
+getstatic java.io.PrintStream java.lang.System.out
+ldc "Result of computation1:"
+invokevirtual void java.io.PrintStream.print(java.lang.String)
+getstatic java.io.PrintStream java.lang.System.out
+getstatic int fib.Fn
+invokevirtual void java.io.PrintStream.println(int)
+ldc 7
+putstatic int fib.n
+getstatic int fib.n
+invokestatic int fib.FIB(int)
+putstatic int fib.Fn
+getstatic java.io.PrintStream java.lang.System.out
+ldc "Result of computation2:"
+invokevirtual void java.io.PrintStream.print(java.lang.String)
+getstatic java.io.PrintStream java.lang.System.out
+getstatic int fib.Fn
+invokevirtual void java.io.PrintStream.println(int)
+
+
+getstatic int fib.n
+ldc 2
+isub
+ifle L6
+iconst_0
+goto L7
+L6:
+iconst_1
+L7:
+ifeq Lfalse4
+ldc 10
+ldc 2
+imul
+istore 0
+
+
+getstatic int fib.n
+ldc 2
+isub
+ifeq L10
+iconst_0
+goto L11
+L10:
+iconst_1
+L11:
+ifeq Lfalse8
+getstatic java.io.PrintStream java.lang.System.out
+iload 0
+invokevirtual void java.io.PrintStream.println(int)
+goto Lexit9
+goto Lfalse8
+Lfalse8:
+getstatic java.io.PrintStream java.lang.System.out
+ldc "n < 2"
+invokevirtual void java.io.PrintStream.println(java.lang.String)
+goto Lexit9
+Lexit9:
+
+
+
+
+getstatic int fib.Fn
+ldc 5
+isub
+ifgt L14
+iconst_0
+goto L15
+L14:
+iconst_1
+L15:
+ifeq Lfalse12
+
+
+getstatic int fib.Fn
+ldc 10
+isub
+ifgt L18
+iconst_0
+goto L19
+L18:
+iconst_1
+L19:
+ifeq Lfalse16
+
+
+getstatic int fib.Fn
+ldc 15
+isub
+ifgt L22
+iconst_0
+goto L23
+L22:
+iconst_1
+L23:
+ifeq Lfalse20
+getstatic java.io.PrintStream java.lang.System.out
+ldc "Fn > 15"
+invokevirtual void java.io.PrintStream.println(java.lang.String)
+goto Lfalse20
+Lfalse20:
+
+
+goto Lfalse16
+Lfalse16:
+
+
+goto Lfalse12
+Lfalse12:
+
+
+goto Lexit5
+goto Lfalse4
+Lfalse4:
+ldc 20
+istore 1
+ldc 80
+ldc 5
+imul
+iload 1
+iadd
+istore 2
+iload 1
+invokestatic int fib.FIB(int)
+istore 1
+getstatic java.io.PrintStream java.lang.System.out
+ldc "Fn = "
+invokevirtual void java.io.PrintStream.print(java.lang.String)
+getstatic java.io.PrintStream java.lang.System.out
+iload 1
+invokevirtual void java.io.PrintStream.println(int)
+getstatic java.io.PrintStream java.lang.System.out
+ldc "Local constant test = "
+invokevirtual void java.io.PrintStream.print(java.lang.String)
+getstatic java.io.PrintStream java.lang.System.out
+iload 2
+invokevirtual void java.io.PrintStream.println(int)
+goto Lexit5
+Lexit5:
+
+
+getstatic java.io.PrintStream java.lang.System.out
+ldc "global constant test = "
+invokevirtual void java.io.PrintStream.print(java.lang.String)
+getstatic java.io.PrintStream java.lang.System.out
+ldc 8
+invokevirtual void java.io.PrintStream.println(int)
+getstatic java.io.PrintStream java.lang.System.out
+ldc "global var temp = "
+invokevirtual void java.io.PrintStream.print(java.lang.String)
+getstatic java.io.PrintStream java.lang.System.out
+getstatic int fib.temp
+invokevirtual void java.io.PrintStream.println(int)
+return
+}
+}
+

@@ -11,28 +11,26 @@ extern char *yytext;
 #include <stdio.h>
 #include "list.h"
 #include "hashtable.h"
-#include "symbol_table.h"
+#include "AST.h"
 
 int ident = 0;
 
 // Print Warning Message
 #define W(S) {printf("<" S ">\n"); exit(0); }
 
-Symbol_table *global_scope = new Symbol_table();
+SymbolTable *current_scope = nullptr;
 
-Symbol_table *current_scope = nullptr;
-
-Symbol_table * function_block = nullptr;
+SymbolTable * function_block = nullptr;
 
 // Change Current Scope To Deeper Block/Scope
 void table_swap_in() {
-    if (function_block){
+    if (function_block) {
         function_block->parent = current_scope;
         current_scope = function_block;
         function_block = nullptr;
         return;
     }
-    Symbol_table * b = new Symbol_table(current_scope); 
+    auto * b = new BlockAST(current_scope); 
     current_scope = b;
 }
 
@@ -45,37 +43,32 @@ void table_swap_out() {
 
 %code requires {
     #include <algorithm>
-    #include "symbol_table.h"
+    #include "AST.h"
 }
 
 %union {
-    type_ * __type;
-    Symbol_table *__sym_t;
+    AST * __ast;
+    NamedAST *__var;
+    ExprAST *__expr;
+    StatementAST *__stmt;
     std::string* __str;
-    std::vector<std::pair<std::string, type_*>>* __params;
-    std::vector<type_*>* __args;
-
-    int __int;
-    float __float;
-    bool __bool;
-    char __char;
+    std::vector<VariableAST*>* __params;
+    std::vector<StatementAST*>* __stmts;
+    std::vector<ExprAST*>* __args;
 }
 
-%token BREAK CASE CLASS CONTINUE DEF DO ELSE EXIT FOR IF NULL_ OBJECT PRINT PRINTLN REPEAT RETURN TO TYPE VAL VAR WHILE
+%token BREAK CASE CLASS CONTINUE DEF DO ELSE EXIT FOR IF NULL_ OBJECT PRINT PRINTLN REPEAT RETURN TO TYPE VAL VAR WHILE EMPTY_RETURN
 
-%token <__str>IDENTIFIER
-%token <__int> INT FLOAT BOOLEAN STRING CHAR
+%token INT FLOAT BOOLEAN STRING CHAR   
+
+%token <__str> IDENTIFIER
 
 %token ADD MINUS MUL DIV MOD LT LE BE BT EQ NE AND OR NOT
 %token EOL LINE
 %token D_COMMA D_COLON D_PERIOD D_SEMICOLON D_LPAREN D_RPAREN D_LSQURE D_RSQURE D_LBRACK D_RBRACK D_LARROW
 %token ASSIGN
 
-%token <__bool> TRUE FALSE
-%token <__int>V_INT 
-%token <__float>V_FLOAT
-%token <__str>V_STRING 
-%token <__char>V_CHAR
+%token <__str> TRUE FALSE V_INT V_FLOAT V_STRING V_CHAR
 
 %token READ
 
@@ -91,18 +84,20 @@ void table_swap_out() {
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
 
-%type <__type> expr number func_call value variable;
-%type <__int> type primitive;
+%type <__expr> expr number func_call value
+%type <__var> variable
+%type <__str> type option_type primitive
 %type <__params> parameters parameters_
 %type <__args> arguments arguments_
-%type <__sym_t> block
 %type <__str> identifer
+%type <__stmt> block loop condition statement
+%type <__stmts> statement_list
 %%
 
 /* Program Start State */
 program: ol OBJECT          
          identifer    
-         ol D_LBRACK            { current_scope = global_scope;}
+         ol D_LBRACK            { current_scope = new ObjectAST(*$3);}
          ol declaration_list    
          ol D_RBRACK
          ol;        
@@ -118,200 +113,254 @@ ol: /*empty*/
     ;
 
 /* Accept a collection of declaration, Each declaration must seperate by lines */
-declaration_list: /*empty*/                     {printf("<C0>");}
-    | declaration                               {printf("<C1>");}
-    | declaration_list line declaration         {printf("<C2>");}
+declaration_list: /*empty*/                     
+    | declaration                               
+    | declaration_list line declaration         
     ;
 
 /* 4 difference type of declaration */
 declaration
-    : val_dec                   {printf("<A1>");}
-    | var_dec                   {printf("<A2>");}
-    | arr_dec                   {printf("<A3>");}
-    | fun_dec                   {printf("<A4>");}
+    : val_dec                   
+    | var_dec                   
+    | arr_dec                   
+    | fun_dec                   
     ;
 
 /* Declaration of function */
-fun_dec: DEF identifer D_LPAREN parameters D_RPAREN type 
+fun_dec: DEF identifer D_LPAREN parameters D_RPAREN option_type 
         {   /* Notice that the parameters is in inverse order, we must reverse it first. */
+            std::reverse($4->begin(), $4->end());
+            
+            std::string type = "void";
+            if ($6->size()) type = *$6;
+            auto func = new FunctionAST(*$2, type, *$4);
+            current_scope->push(func);
 
-            std::reverse($4->begin(), $4->end()); 
-            auto t = DEFINE(func, dynamic_type($6), *$4);
-            current_scope->declare(*($2), t);
-
-            /* Parameters are seen as local variable in C, so I decide to share the function's symbol table with block */
             /* To share the symbol table, I just store it with global variable. The next terminal<block> would use it. */
-            function_block = t->sym_t;
+            function_block = func->block;
         }
         block
-        { type_cast<func>(current_scope->find_all(*($2)))->define($8); }
         ;
 
 /* Formal parameters */
-parameters: /*empty*/ { $$ = new std::vector<std::pair<std::string, type_*>>(); }
-    | identifer type parameters_ {
-                                  $$ = $3;
-                                  $$->push_back({*($1), dynamic_type($2)});
-                                  }
+parameters: /*empty*/ { $$ = new std::vector<VariableAST*>(); }
+    | identifer type parameters_ 
+        {
+            $$ = $3;
+            $$->push_back(new VariableAST(*$1, *$2));
+        }
     ;
 
 /* Formal parameters */
-parameters_: /*empty*/ {$$ =  new std::vector<std::pair<std::string, type_*>>();}
-    | D_COMMA identifer type parameters_  { $$ = $4; $$->push_back({*($2), dynamic_type($3)}); }
+parameters_: /*empty*/ {$$ =  new std::vector<VariableAST*>();}
+    | D_COMMA identifer type parameters_ 
+        {
+            $$ = $4; 
+            $$->push_back(new VariableAST(*$2, *$3)); 
+        }
     ;
 
 /* Actual parameters */
-arguments: /*empty*/    { $$ = new std::vector<type_*>(); }
+arguments: /*empty*/    { $$ = new std::vector<ExprAST*>(); }
     | expr arguments_   {$$ = $2; $$->push_back($1); }
     ;
 
 /* Actual parameters */
-arguments_: /*empty*/   { $$ = new std::vector<type_*>(); }
+arguments_: /*empty*/   { $$ = new std::vector<ExprAST*>(); }
     | D_COMMA expr arguments_ {$$ = $3; $$->push_back($2);  }
     ;
 
 /* Accept a collection of statement (including declaration), Each statement must seperate by lines */
-statement_list: /*empty*/               
-    | statement                         
-    | statement_list line statement     
+statement_list: /*empty*/                   { $$ = new std::vector<StatementAST*>(); }
+    | statement                             { $$ = new std::vector<StatementAST*>(); $$->push_back($1);}
+    | statement_list line statement         { $$ = $1; $$->push_back($3); }
     ;
 
 /* Difference types of statement */
 statement
-    : declaration                           
-    | variable ASSIGN expr                  
+    : declaration
         {
-        /* Assignment with check */
-        if($1->is_constant)     W("Variable is Constant"); 
-        if (!same_type($1, $3)) W("Assigning Variable Not The Same Type");
+            $$ = new NullAST();
+        }                      
+    | variable ASSIGN expr                  
+        {   
+            auto var = dynamic_cast<VariableAST*>($1);
+            if (!var) Error("[Parser] <%s> is not a variable\n", $1->name);
+            $$ = new AssignAST(var, $3);
         }
-    | expr                                  
-    | PRINT D_LPAREN expr D_RPAREN          
-    | PRINTLN D_LPAREN expr D_RPAREN        
-    | READ variable                         
-    | RETURN option_expr                    
-    | block                                 
-    | loop                                  
-    | condition                             
+    | expr
+        {
+            $$ = $1;
+        }
+    | PRINT expr 
+        {
+            auto print = dynamic_cast<FunctionAST*>(current_scope->find("print"));
+            if (!print) Error("[Parser] <%s> is not a function\n", "print");
+            $$ = new InvokeAST(print, {$2});
+        }
+    | PRINTLN expr
+        {
+            auto println = dynamic_cast<FunctionAST*>(current_scope->find("println"));
+            if (!println) Error("[Parser] <%s> is not a function\n", "println");
+            $$ = new InvokeAST(println, {$2});
+        }
+    | READ variable
+        {
+            $$ = new NullAST();
+            Error("[Parser] No implement for read\n");
+        }
+    | EMPTY_RETURN
+        {
+            $$ = new ReturnAST(new NullAST());
+        }
+    | RETURN expr
+        {
+            $$ = new ReturnAST($2);
+        }            
+    | block
+        {
+            $$ = $1;
+        }                       
+    | loop
+        {
+            $$ = $1;
+        }
+    | condition
+        {
+            $$ = $1;
+        }         
     ; 
 
 val_dec
-    : VAL identifer type ASSIGN expr       { 
-                                            if (($3 != 0) && !same_type(dynamic_type($3), $5)) W("Definition Type Not Compatible");
-                                            if (!current_scope->declare(*($2), $5)) W("Re-define Variable Is Not Allow");
+    : VAL identifer option_type ASSIGN expr        {
+                                            if (($3->size()) && (*$3 != $5->type)) Error("[Parser] Value type not match");
+                                            current_scope->push(new VariableAST(*$2, $5, true));
                                             }
     ;
 
 var_dec
-    : VAR identifer type ASSIGN expr       { 
-                                            $5->is_constant = false;
-                                            if (($3 != 0) && !same_type(dynamic_type($3), $5)) W("Definition Type Not Compatible");
-                                            if (!current_scope->declare(*($2), $5)) W("Re-define Variable Is Not Allow");
+    : VAR identifer option_type ASSIGN expr        {
+                                            if (($3->size()) && (*$3 != $5->type)) Error("[Parser] Value type not match");
+                                            current_scope->push(new VariableAST(*$2, $5));
                                             }
-    | VAR identifer type                   { 
-                                            if ($3 == 0) W("Variable Declaration Should Be Typed");
-                                            auto t = dynamic_type($3);
-                                            t->is_constant = false;
-                                            if (!current_scope->declare(*($2), t)) W("Re-define Is Not Allow");
+    | VAR identifer option_type                    {
+                                            std::string type;
+                                            if ($3->size()) type = *$3;
+                                            else type = "int";
+                                            current_scope->push(new VariableAST(*$2, type));
                                             }
     ;
 
-arr_dec: VAR identifer type D_LSQURE expr D_RSQURE
+arr_dec: VAR identifer option_type D_LSQURE expr D_RSQURE
                                             {
-                                            if (!type_check<int>($5)) W("Range Must Be Int");
-                                            auto t = dynamic_type($3);
-                                            if (t == nullptr)  W("Array Declaration Should Be Typed");
-
-                                            auto k = DECLARE(arr);
-                                            k->element_type = t;
-
-                                            if (!current_scope->declare(*($2), k)) W("Re-define Variable Is Not Allow");
+                                            Error("[Parser] No implement for array");
                                             }
     ;
 
-option_expr: /*empty*/
-    | expr
+type: D_COLON primitive { $$ = $2; };
+
+option_type: /*empty*/ { $$ = new std::string();} | type;
+
+primitive
+    : INT       { $$ = new std::string("int");              }
+    | FLOAT     { $$ = new std::string("float");            }
+    | BOOLEAN   { $$ = new std::string("bool");             }
+    | STRING    { $$ = new std::string("java.lang.String"); } 
+    | CHAR      { $$ = new std::string("char");             }
     ;
-
-type: /*empty*/ {$$ = 0;} | D_COLON primitive { $$ = $2;};
-
-primitive: INT | FLOAT | BOOLEAN | STRING | CHAR;
 
 /* Block */
-block: ol D_LBRACK              {table_swap_in();}
+block: ol D_LBRACK                                  { table_swap_in();}
        ol statement_list 
-       ol D_RBRACK                 {$$ = current_scope; table_swap_out();}
+       ol D_RBRACK                                  
+       { 
+           auto t1 = dynamic_cast<BlockAST*>(current_scope); 
+           for (auto stmt : *$5) t1->push(stmt);
+           $$ = t1;
+           table_swap_out();
+       }
     ;
 
 /* Parse Grammar */
 /* Type checking is outside the grammar */
 /* Association is define at the first section using %left, %right */
 expr
-    : value                         { $$ = $1;}        
-    | NOT expr                      { if(!type_check<bool>($2)) W("Must Be Boolean"); $$ = $2; }            
-    | D_LPAREN expr D_RPAREN        { $$ = $2;}                            
-    | expr LT expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
-    | expr LE expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
-    | expr EQ expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
-    | expr BE expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
-    | expr BT expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
-    | expr NE expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
-    | expr AND expr                 { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
-    | expr OR expr                  { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = DECLARE(bool); }                
-    | expr MUL expr                 { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = $1; }                
-    | expr DIV expr                 { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = $1; }                
-    | expr ADD expr                 { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = $1; }                
-    | expr MINUS expr               { if(!type_check<int, float>($1, $3)) W("Must Be Number"); $$ = $1; }                    
-    | expr MOD expr                 { if(!type_check<int>($1, $3)) W("Must Be Int"); $$ = $1; }                
-    | MINUS expr %prec UMINUS       { if(!type_check<int, float>($2)) W("Must Be Number"); $$ = $2; }                            
+    : value                         { $$ = $1; }        
+    | NOT expr                      { $$ = new SingleExprAST("!", $2); }            
+    | D_LPAREN expr D_RPAREN        { $$ = $2; }                            
+    | expr LT expr                  { $$ = new BinaryExprAST("<" , $1, $3); }                
+    | expr LE expr                  { $$ = new BinaryExprAST("<=", $1, $3); }                
+    | expr EQ expr                  { $$ = new BinaryExprAST("==", $1, $3); }                
+    | expr BE expr                  { $$ = new BinaryExprAST(">=", $1, $3); }                
+    | expr BT expr                  { $$ = new BinaryExprAST(">" , $1, $3); }                
+    | expr NE expr                  { $$ = new BinaryExprAST("!=", $1, $3); }                
+    | expr AND expr                 { $$ = new BinaryExprAST("&&", $1, $3); }                
+    | expr OR expr                  { $$ = new BinaryExprAST("||", $1, $3); }                
+    | expr MUL expr                 { $$ = new BinaryExprAST("*", $1, $3);  }                
+    | expr DIV expr                 { $$ = new BinaryExprAST("/", $1, $3);  }                
+    | expr ADD expr                 { $$ = new BinaryExprAST("+", $1, $3);  }                
+    | expr MINUS expr               { $$ = new BinaryExprAST("-", $1, $3);  }                    
+    | expr MOD expr                 { $$ = new BinaryExprAST("%", $1, $3);  }                
+    | MINUS expr %prec UMINUS       { $$ = new SingleExprAST("-", $2);      }                            
     ;
 
 number
-    : V_INT {$$= DEFINE(int, $1);} 
-    | V_FLOAT {$$= DEFINE(float, $1);};
+    : V_INT    {$$ = new ValueAST("int",   *$1);} 
+    | V_FLOAT  {$$ = new ValueAST("float", *$1);}
+    ;
 
-func_call: variable D_LPAREN arguments D_RPAREN { 
-                                                    auto t = type_cast<func>($1); 
-                                                    if (!t) W("Function Not Exist");
+func_call: variable D_LPAREN arguments D_RPAREN     {
+                                                    auto t = dynamic_cast<FunctionAST*>($1);
+                                                    if (!t) Error("[Parser] <%s> is not a function\n", $1->name.c_str());
                                                     std::reverse($3->begin(), $3->end());
-                                                    if (!t->call_check($3)) W("Parameters Type Not Match");
-                                                    $$ = t->ret_val(); 
-                                                  };
+                                                    $$ = new InvokeAST(t, *$3);
+                                                    };
 
 value
-    : TRUE                                          {$$ = TYPE($1);}
-    | FALSE                                         {$$ = TYPE($1);}
+    : TRUE                                          {$$ = new ValueAST("bool", "1");}
+    | FALSE                                         {$$ = new ValueAST("bool", "0");}
     | number                                        {$$ = $1;}
     | func_call                                     {$$ = $1;}
-    | variable                                      {$$ = $1;}
-    | V_STRING                                      {$$ = TYPE(*$1);}
-    | V_CHAR                                        {$$ = TYPE($1);}
+    | variable                                      {
+                                                    auto var = dynamic_cast<VariableAST*>($1);
+                                                    if (!var) Error("[Parser] <%s> is not a variable\n", $1->name);
+                                                    $$ = var->to_value();
+                                                    }
+    | V_STRING                                      {$$ = new ValueAST("java.lang.String", *$1);}
+    | V_CHAR                                        {$$ = new ValueAST("char", *$1);}
     ;
 
 variable
-    : identifer                                    { 
-                                                    $$ = current_scope->find_all(*($1)); 
-                                                    if($$ == nullptr) W("Variable Not Found");
+    : identifer                                     { 
+                                                    $$ = current_scope->find(*($1));
                                                     }
     | variable D_LSQURE expr D_RSQURE               {
-                                                    if(!type_check<arr>($1)) W("Not An Array");
-                                                    if(!type_check<int>($3)) W("Index Must Be Int");
-                                                    $$ = type_cast<arr>($1)->element_type;
+                                                    Error("[Parser] No implement for array\n");
                                                     }
     ;
 
-loop
-    : WHILE D_LPAREN expr D_RPAREN statement
+loop: WHILE D_LPAREN expr D_RPAREN statement
+        {
+            $$ = new WhileAST($3, $5);
+        }
     | FOR D_LPAREN variable D_LARROW expr TO expr D_RPAREN statement
+        {
+            $$ = new NullAST();
+            Error("[Parser] No implement for for-loop\n");
+        }
     ;
 
-
-if_: IF D_LPAREN expr D_RPAREN ol statement;
-else_: ELSE statement;
-
 condition
-    : if_             %prec LOWER_THAN_ELSE         {printf("<IF>");}
-    | if_ else_                                     {printf("<IF_ELSE>");}
+    : IF D_LPAREN expr D_RPAREN ol statement %prec LOWER_THAN_ELSE
+        {
+            $$ = new IfAST($3, $6, new NullAST());
+            //fprintf(stderr,"<IF>");
+        }
+    | IF D_LPAREN expr D_RPAREN ol statement ELSE statement
+        {
+            $$ = new IfAST($3, $6, $8);
+            //fprintf(stderr,"<IF_ELSE>");
+        }
     ;
 
 

@@ -17,10 +17,9 @@ Terminals unused in grammar
 State 1 conflicts: 1 shift/reduce
 State 12 conflicts: 1 shift/reduce
 State 26 conflicts: 1 shift/reduce
-State 118 conflicts: 1 shift/reduce
-State 120 conflicts: 1 shift/reduce
-State 125 conflicts: 1 shift/reduce
-State 161 conflicts: 1 shift/reduce
+State 119 conflicts: 1 shift/reduce
+State 121 conflicts: 1 shift/reduce
+State 156 conflicts: 1 shift/reduce
 
 
 Grammar
@@ -49,7 +48,7 @@ Grammar
 
    14 $@2: %empty
 
-   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN type $@2 block
+   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN option_type $@2 block
 
    16 parameters: %empty
    17           | identifer type parameters_
@@ -70,26 +69,26 @@ Grammar
    27 statement: declaration
    28          | variable ASSIGN expr
    29          | expr
-   30          | PRINT D_LPAREN expr D_RPAREN
-   31          | PRINTLN D_LPAREN expr D_RPAREN
+   30          | PRINT expr
+   31          | PRINTLN expr
    32          | READ variable
-   33          | RETURN option_expr
-   34          | block
-   35          | loop
-   36          | condition
+   33          | EMPTY_RETURN
+   34          | RETURN expr
+   35          | block
+   36          | loop
+   37          | condition
 
-   37 val_dec: VAL identifer type ASSIGN expr
+   38 val_dec: VAL identifer option_type ASSIGN expr
 
-   38 var_dec: VAR identifer type ASSIGN expr
-   39        | VAR identifer type
+   39 var_dec: VAR identifer option_type ASSIGN expr
+   40        | VAR identifer option_type
 
-   40 arr_dec: VAR identifer type D_LSQURE expr D_RSQURE
+   41 arr_dec: VAR identifer option_type D_LSQURE expr D_RSQURE
 
-   41 option_expr: %empty
-   42            | expr
+   42 type: D_COLON primitive
 
-   43 type: %empty
-   44     | D_COLON primitive
+   43 option_type: %empty
+   44            | type
 
    45 primitive: INT
    46          | FLOAT
@@ -138,12 +137,8 @@ Grammar
    81 loop: WHILE D_LPAREN expr D_RPAREN statement
    82     | FOR D_LPAREN variable D_LARROW expr TO expr D_RPAREN statement
 
-   83 if_: IF D_LPAREN expr D_RPAREN ol statement
-
-   84 else_: ELSE statement
-
-   85 condition: if_
-   86          | if_ else_
+   83 condition: IF D_LPAREN expr D_RPAREN ol statement
+   84          | IF D_LPAREN expr D_RPAREN ol statement ELSE statement
 
 
 Terminals, with rules where they appear
@@ -159,134 +154,131 @@ DO (263)
 ELSE (264) 84
 EXIT (265)
 FOR (266) 82
-IF (267) 83
+IF (267) 83 84
 NULL_ (268)
 OBJECT (269) 2
 PRINT (270) 30
 PRINTLN (271) 31
 REPEAT (272)
-RETURN (273) 33
+RETURN (273) 34
 TO (274) 82
 TYPE (275)
-VAL (276) 37
-VAR (277) 38 39 40
+VAL (276) 38
+VAR (277) 39 40 41
 WHILE (278) 81
-IDENTIFIER (279) 3
+EMPTY_RETURN (279) 33
 INT (280) 45
 FLOAT (281) 46
 BOOLEAN (282) 47
 STRING (283) 48
 CHAR (284) 49
-ADD (285) 65
-MINUS (286) 66 68
-MUL (287) 63
-DIV (288) 64
-MOD (289) 67
-LT (290) 55
-LE (291) 56
-BE (292) 58
-BT (293) 59
-EQ (294) 57
-NE (295) 60
-AND (296) 61
-OR (297) 62
-NOT (298) 53
-EOL (299)
-LINE (300) 4 6
-D_COMMA (301) 19 23
-D_COLON (302) 44
-D_PERIOD (303)
-D_SEMICOLON (304)
-D_LPAREN (305) 15 30 31 54 71 81 82 83
-D_RPAREN (306) 15 30 31 54 71 81 82 83
-D_LSQURE (307) 40 80
-D_RSQURE (308) 40 80
-D_LBRACK (309) 2 51
-D_RBRACK (310) 2 51
-D_LARROW (311) 82
-ASSIGN (312) 28 37 38
-TRUE (313) 72
-FALSE (314) 73
-V_INT (315) 69
-V_FLOAT (316) 70
-V_STRING (317) 77
-V_CHAR (318) 78
-READ (319) 32
-UMINUS (320)
-LOWER_THAN_ELSE (321)
+IDENTIFIER (285) 3
+ADD (286) 65
+MINUS (287) 66 68
+MUL (288) 63
+DIV (289) 64
+MOD (290) 67
+LT (291) 55
+LE (292) 56
+BE (293) 58
+BT (294) 59
+EQ (295) 57
+NE (296) 60
+AND (297) 61
+OR (298) 62
+NOT (299) 53
+EOL (300)
+LINE (301) 4 6
+D_COMMA (302) 19 23
+D_COLON (303) 42
+D_PERIOD (304)
+D_SEMICOLON (305)
+D_LPAREN (306) 15 54 71 81 82 83 84
+D_RPAREN (307) 15 54 71 81 82 83 84
+D_LSQURE (308) 41 80
+D_RSQURE (309) 41 80
+D_LBRACK (310) 2 51
+D_RBRACK (311) 2 51
+D_LARROW (312) 82
+ASSIGN (313) 28 38 39
+TRUE (314) 72
+FALSE (315) 73
+V_INT (316) 69
+V_FLOAT (317) 70
+V_STRING (318) 77
+V_CHAR (319) 78
+READ (320) 32
+UMINUS (321)
+LOWER_THAN_ELSE (322)
 
 
 Nonterminals, with rules where they appear
 
-$accept (67)
+$accept (68)
     on left: 0
-program (68)
+program (69)
     on left: 2, on right: 0
-$@1 (69)
+$@1 (70)
     on left: 1, on right: 2
-identifer (70)
-    on left: 3, on right: 2 15 17 19 37 38 39 40 79
-line (71)
+identifer (71)
+    on left: 3, on right: 2 15 17 19 38 39 40 41 79
+line (72)
     on left: 4, on right: 9 26
-ol (72)
-    on left: 5 6, on right: 2 3 4 6 51 83
-declaration_list (73)
+ol (73)
+    on left: 5 6, on right: 2 3 4 6 51 83 84
+declaration_list (74)
     on left: 7 8 9, on right: 2 9
-declaration (74)
+declaration (75)
     on left: 10 11 12 13, on right: 8 9 27
-fun_dec (75)
+fun_dec (76)
     on left: 15, on right: 13
-$@2 (76)
+$@2 (77)
     on left: 14, on right: 15
-parameters (77)
+parameters (78)
     on left: 16 17, on right: 15
-parameters_ (78)
+parameters_ (79)
     on left: 18 19, on right: 17 19
-arguments (79)
+arguments (80)
     on left: 20 21, on right: 71
-arguments_ (80)
+arguments_ (81)
     on left: 22 23, on right: 21 23
-statement_list (81)
+statement_list (82)
     on left: 24 25 26, on right: 26 51
-statement (82)
-    on left: 27 28 29 30 31 32 33 34 35 36, on right: 25 26 81 82 83
-    84
-val_dec (83)
-    on left: 37, on right: 10
-var_dec (84)
-    on left: 38 39, on right: 11
-arr_dec (85)
-    on left: 40, on right: 12
-option_expr (86)
-    on left: 41 42, on right: 33
+statement (83)
+    on left: 27 28 29 30 31 32 33 34 35 36 37, on right: 25 26 81 82
+    83 84
+val_dec (84)
+    on left: 38, on right: 10
+var_dec (85)
+    on left: 39 40, on right: 11
+arr_dec (86)
+    on left: 41, on right: 12
 type (87)
-    on left: 43 44, on right: 15 17 19 37 38 39 40
-primitive (88)
-    on left: 45 46 47 48 49, on right: 44
-block (89)
-    on left: 51, on right: 15 34
-$@3 (90)
+    on left: 42, on right: 17 19 44
+option_type (88)
+    on left: 43 44, on right: 15 38 39 40 41
+primitive (89)
+    on left: 45 46 47 48 49, on right: 42
+block (90)
+    on left: 51, on right: 15 35
+$@3 (91)
     on left: 50, on right: 51
-expr (91)
+expr (92)
     on left: 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68, on right:
-    21 23 28 29 30 31 37 38 40 42 53 54 55 56 57 58 59 60 61 62 63
-    64 65 66 67 68 80 81 82 83
-number (92)
+    21 23 28 29 30 31 34 38 39 41 53 54 55 56 57 58 59 60 61 62 63
+    64 65 66 67 68 80 81 82 83 84
+number (93)
     on left: 69 70, on right: 74
-func_call (93)
+func_call (94)
     on left: 71, on right: 75
-value (94)
+value (95)
     on left: 72 73 74 75 76 77 78, on right: 52
-variable (95)
+variable (96)
     on left: 79 80, on right: 28 32 71 76 80 82
-loop (96)
-    on left: 81 82, on right: 35
-if_ (97)
-    on left: 83, on right: 85 86
-else_ (98)
-    on left: 84, on right: 86
-condition (99)
-    on left: 85 86, on right: 36
+loop (97)
+    on left: 81 82, on right: 36
+condition (98)
+    on left: 83 84, on right: 37
 
 
 State 0
@@ -426,7 +418,7 @@ State 13
 
 State 14
 
-   15 fun_dec: DEF . identifer D_LPAREN parameters D_RPAREN type $@2 block
+   15 fun_dec: DEF . identifer D_LPAREN parameters D_RPAREN option_type $@2 block
 
     LINE  shift, and go to state 1
 
@@ -438,7 +430,7 @@ State 14
 
 State 15
 
-   37 val_dec: VAL . identifer type ASSIGN expr
+   38 val_dec: VAL . identifer option_type ASSIGN expr
 
     LINE  shift, and go to state 1
 
@@ -450,9 +442,9 @@ State 15
 
 State 16
 
-   38 var_dec: VAR . identifer type ASSIGN expr
-   39        | VAR . identifer type
-   40 arr_dec: VAR . identifer type D_LSQURE expr D_RSQURE
+   39 var_dec: VAR . identifer option_type ASSIGN expr
+   40        | VAR . identifer option_type
+   41 arr_dec: VAR . identifer option_type D_LSQURE expr D_RSQURE
 
     LINE  shift, and go to state 1
 
@@ -512,33 +504,35 @@ State 22
 
 State 23
 
-   15 fun_dec: DEF identifer . D_LPAREN parameters D_RPAREN type $@2 block
+   15 fun_dec: DEF identifer . D_LPAREN parameters D_RPAREN option_type $@2 block
 
     D_LPAREN  shift, and go to state 29
 
 
 State 24
 
-   37 val_dec: VAL identifer . type ASSIGN expr
+   38 val_dec: VAL identifer . option_type ASSIGN expr
 
     D_COLON  shift, and go to state 30
 
-    $default  reduce using rule 43 (type)
+    $default  reduce using rule 43 (option_type)
 
-    type  go to state 31
+    type         go to state 31
+    option_type  go to state 32
 
 
 State 25
 
-   38 var_dec: VAR identifer . type ASSIGN expr
-   39        | VAR identifer . type
-   40 arr_dec: VAR identifer . type D_LSQURE expr D_RSQURE
+   39 var_dec: VAR identifer . option_type ASSIGN expr
+   40        | VAR identifer . option_type
+   41 arr_dec: VAR identifer . option_type D_LSQURE expr D_RSQURE
 
     D_COLON  shift, and go to state 30
 
-    $default  reduce using rule 43 (type)
+    $default  reduce using rule 43 (option_type)
 
-    type  go to state 32
+    type         go to state 31
+    option_type  go to state 33
 
 
 State 26
@@ -551,7 +545,7 @@ State 26
     LINE      [reduce using rule 5 (ol)]
     $default  reduce using rule 5 (ol)
 
-    ol  go to state 33
+    ol  go to state 34
 
 
 State 27
@@ -562,7 +556,7 @@ State 27
     VAL  shift, and go to state 15
     VAR  shift, and go to state 16
 
-    declaration  go to state 34
+    declaration  go to state 35
     fun_dec      go to state 19
     val_dec      go to state 20
     var_dec      go to state 21
@@ -573,56 +567,63 @@ State 28
 
     2 program: ol OBJECT identifer ol D_LBRACK $@1 ol declaration_list ol . D_RBRACK ol
 
-    D_RBRACK  shift, and go to state 35
+    D_RBRACK  shift, and go to state 36
 
 
 State 29
 
-   15 fun_dec: DEF identifer D_LPAREN . parameters D_RPAREN type $@2 block
+   15 fun_dec: DEF identifer D_LPAREN . parameters D_RPAREN option_type $@2 block
 
     LINE  shift, and go to state 1
 
     D_RPAREN  reduce using rule 16 (parameters)
     $default  reduce using rule 5 (ol)
 
-    identifer   go to state 36
+    identifer   go to state 37
     ol          go to state 8
-    parameters  go to state 37
+    parameters  go to state 38
 
 
 State 30
 
-   44 type: D_COLON . primitive
+   42 type: D_COLON . primitive
 
-    INT      shift, and go to state 38
-    FLOAT    shift, and go to state 39
-    BOOLEAN  shift, and go to state 40
-    STRING   shift, and go to state 41
-    CHAR     shift, and go to state 42
+    INT      shift, and go to state 39
+    FLOAT    shift, and go to state 40
+    BOOLEAN  shift, and go to state 41
+    STRING   shift, and go to state 42
+    CHAR     shift, and go to state 43
 
-    primitive  go to state 43
+    primitive  go to state 44
 
 
 State 31
 
-   37 val_dec: VAL identifer type . ASSIGN expr
+   44 option_type: type .
 
-    ASSIGN  shift, and go to state 44
+    $default  reduce using rule 44 (option_type)
 
 
 State 32
 
-   38 var_dec: VAR identifer type . ASSIGN expr
-   39        | VAR identifer type .
-   40 arr_dec: VAR identifer type . D_LSQURE expr D_RSQURE
+   38 val_dec: VAL identifer option_type . ASSIGN expr
 
-    D_LSQURE  shift, and go to state 45
-    ASSIGN    shift, and go to state 46
-
-    $default  reduce using rule 39 (var_dec)
+    ASSIGN  shift, and go to state 45
 
 
 State 33
+
+   39 var_dec: VAR identifer option_type . ASSIGN expr
+   40        | VAR identifer option_type .
+   41 arr_dec: VAR identifer option_type . D_LSQURE expr D_RSQURE
+
+    D_LSQURE  shift, and go to state 46
+    ASSIGN    shift, and go to state 47
+
+    $default  reduce using rule 40 (var_dec)
+
+
+State 34
 
     4 line: LINE ol .
     6 ol: LINE ol .
@@ -631,14 +632,14 @@ State 33
     $default  reduce using rule 4 (line)
 
 
-State 34
+State 35
 
     9 declaration_list: declaration_list line declaration .
 
     $default  reduce using rule 9 (declaration_list)
 
 
-State 35
+State 36
 
     2 program: ol OBJECT identifer ol D_LBRACK $@1 ol declaration_list ol D_RBRACK . ol
 
@@ -646,306 +647,305 @@ State 35
 
     $default  reduce using rule 5 (ol)
 
-    ol  go to state 47
+    ol  go to state 48
 
 
-State 36
+State 37
 
    17 parameters: identifer . type parameters_
 
     D_COLON  shift, and go to state 30
 
-    $default  reduce using rule 43 (type)
-
-    type  go to state 48
-
-
-State 37
-
-   15 fun_dec: DEF identifer D_LPAREN parameters . D_RPAREN type $@2 block
-
-    D_RPAREN  shift, and go to state 49
+    type  go to state 49
 
 
 State 38
+
+   15 fun_dec: DEF identifer D_LPAREN parameters . D_RPAREN option_type $@2 block
+
+    D_RPAREN  shift, and go to state 50
+
+
+State 39
 
    45 primitive: INT .
 
     $default  reduce using rule 45 (primitive)
 
 
-State 39
+State 40
 
    46 primitive: FLOAT .
 
     $default  reduce using rule 46 (primitive)
 
 
-State 40
+State 41
 
    47 primitive: BOOLEAN .
 
     $default  reduce using rule 47 (primitive)
 
 
-State 41
+State 42
 
    48 primitive: STRING .
 
     $default  reduce using rule 48 (primitive)
 
 
-State 42
+State 43
 
    49 primitive: CHAR .
 
     $default  reduce using rule 49 (primitive)
 
 
-State 43
-
-   44 type: D_COLON primitive .
-
-    $default  reduce using rule 44 (type)
-
-
 State 44
 
-   37 val_dec: VAL identifer type ASSIGN . expr
+   42 type: D_COLON primitive .
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-
-    $default  reduce using rule 5 (ol)
-
-    identifer  go to state 59
-    ol         go to state 8
-    expr       go to state 60
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    $default  reduce using rule 42 (type)
 
 
 State 45
 
-   40 arr_dec: VAR identifer type D_LSQURE . expr D_RSQURE
+   38 val_dec: VAL identifer option_type ASSIGN . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    expr       go to state 65
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    expr       go to state 61
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 46
 
-   38 var_dec: VAR identifer type ASSIGN . expr
+   41 arr_dec: VAR identifer option_type D_LSQURE . expr D_RSQURE
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 66
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 47
+
+   39 var_dec: VAR identifer option_type ASSIGN . expr
+
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
+    LINE      shift, and go to state 1
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
+
+    $default  reduce using rule 5 (ol)
+
+    identifer  go to state 60
+    ol         go to state 8
+    expr       go to state 67
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
+
+
+State 48
 
     2 program: ol OBJECT identifer ol D_LBRACK $@1 ol declaration_list ol D_RBRACK ol .
 
     $default  reduce using rule 2 (program)
 
 
-State 48
+State 49
 
    17 parameters: identifer type . parameters_
 
-    D_COMMA  shift, and go to state 67
+    D_COMMA  shift, and go to state 68
 
     $default  reduce using rule 18 (parameters_)
 
-    parameters_  go to state 68
-
-
-State 49
-
-   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN . type $@2 block
-
-    D_COLON  shift, and go to state 30
-
-    $default  reduce using rule 43 (type)
-
-    type  go to state 69
+    parameters_  go to state 69
 
 
 State 50
 
-   68 expr: MINUS . expr
+   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN . option_type $@2 block
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_COLON  shift, and go to state 30
 
-    $default  reduce using rule 5 (ol)
+    $default  reduce using rule 43 (option_type)
 
-    identifer  go to state 59
-    ol         go to state 8
-    expr       go to state 70
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    type         go to state 31
+    option_type  go to state 70
 
 
 State 51
 
-   53 expr: NOT . expr
+   68 expr: MINUS . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 71
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 52
 
-   54 expr: D_LPAREN . expr D_RPAREN
+   53 expr: NOT . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 72
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 53
+
+   54 expr: D_LPAREN . expr D_RPAREN
+
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
+    LINE      shift, and go to state 1
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
+
+    $default  reduce using rule 5 (ol)
+
+    identifer  go to state 60
+    ol         go to state 8
+    expr       go to state 73
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
+
+
+State 54
 
    72 value: TRUE .
 
     $default  reduce using rule 72 (value)
 
 
-State 54
+State 55
 
    73 value: FALSE .
 
     $default  reduce using rule 73 (value)
 
 
-State 55
+State 56
 
    69 number: V_INT .
 
     $default  reduce using rule 69 (number)
 
 
-State 56
+State 57
 
    70 number: V_FLOAT .
 
     $default  reduce using rule 70 (number)
 
 
-State 57
+State 58
 
    77 value: V_STRING .
 
     $default  reduce using rule 77 (value)
 
 
-State 58
+State 59
 
    78 value: V_CHAR .
 
     $default  reduce using rule 78 (value)
 
 
-State 59
+State 60
 
    79 variable: identifer .
 
     $default  reduce using rule 79 (variable)
 
 
-State 60
+State 61
 
-   37 val_dec: VAL identifer type ASSIGN expr .
+   38 val_dec: VAL identifer option_type ASSIGN expr .
    55 expr: expr . LT expr
    56     | expr . LE expr
    57     | expr . EQ expr
@@ -960,92 +960,59 @@ State 60
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
-    AND    shift, and go to state 84
-    OR     shift, and go to state 85
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
+    OR     shift, and go to state 86
 
-    $default  reduce using rule 37 (val_dec)
+    $default  reduce using rule 38 (val_dec)
 
 
-State 61
+State 62
 
    74 value: number .
 
     $default  reduce using rule 74 (value)
 
 
-State 62
+State 63
 
    75 value: func_call .
 
     $default  reduce using rule 75 (value)
 
 
-State 63
+State 64
 
    52 expr: value .
 
     $default  reduce using rule 52 (expr)
 
 
-State 64
+State 65
 
    71 func_call: variable . D_LPAREN arguments D_RPAREN
    76 value: variable .
    80 variable: variable . D_LSQURE expr D_RSQURE
 
-    D_LPAREN  shift, and go to state 86
-    D_LSQURE  shift, and go to state 87
+    D_LPAREN  shift, and go to state 87
+    D_LSQURE  shift, and go to state 88
 
     $default  reduce using rule 76 (value)
 
 
-State 65
-
-   40 arr_dec: VAR identifer type D_LSQURE expr . D_RSQURE
-   55 expr: expr . LT expr
-   56     | expr . LE expr
-   57     | expr . EQ expr
-   58     | expr . BE expr
-   59     | expr . BT expr
-   60     | expr . NE expr
-   61     | expr . AND expr
-   62     | expr . OR expr
-   63     | expr . MUL expr
-   64     | expr . DIV expr
-   65     | expr . ADD expr
-   66     | expr . MINUS expr
-   67     | expr . MOD expr
-
-    ADD       shift, and go to state 73
-    MINUS     shift, and go to state 74
-    MUL       shift, and go to state 75
-    DIV       shift, and go to state 76
-    MOD       shift, and go to state 77
-    LT        shift, and go to state 78
-    LE        shift, and go to state 79
-    BE        shift, and go to state 80
-    BT        shift, and go to state 81
-    EQ        shift, and go to state 82
-    NE        shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    D_RSQURE  shift, and go to state 88
-
-
 State 66
 
-   38 var_dec: VAR identifer type ASSIGN expr .
+   41 arr_dec: VAR identifer option_type D_LSQURE expr . D_RSQURE
    55 expr: expr . LT expr
    56     | expr . LE expr
    57     | expr . EQ expr
@@ -1060,24 +1027,57 @@ State 66
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
-    AND    shift, and go to state 84
-    OR     shift, and go to state 85
-
-    $default  reduce using rule 38 (var_dec)
+    ADD       shift, and go to state 74
+    MINUS     shift, and go to state 75
+    MUL       shift, and go to state 76
+    DIV       shift, and go to state 77
+    MOD       shift, and go to state 78
+    LT        shift, and go to state 79
+    LE        shift, and go to state 80
+    BE        shift, and go to state 81
+    BT        shift, and go to state 82
+    EQ        shift, and go to state 83
+    NE        shift, and go to state 84
+    AND       shift, and go to state 85
+    OR        shift, and go to state 86
+    D_RSQURE  shift, and go to state 89
 
 
 State 67
+
+   39 var_dec: VAR identifer option_type ASSIGN expr .
+   55 expr: expr . LT expr
+   56     | expr . LE expr
+   57     | expr . EQ expr
+   58     | expr . BE expr
+   59     | expr . BT expr
+   60     | expr . NE expr
+   61     | expr . AND expr
+   62     | expr . OR expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . ADD expr
+   66     | expr . MINUS expr
+   67     | expr . MOD expr
+
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
+    OR     shift, and go to state 86
+
+    $default  reduce using rule 39 (var_dec)
+
+
+State 68
 
    19 parameters_: D_COMMA . identifer type parameters_
 
@@ -1085,27 +1085,27 @@ State 67
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 89
+    identifer  go to state 90
     ol         go to state 8
 
 
-State 68
+State 69
 
    17 parameters: identifer type parameters_ .
 
     $default  reduce using rule 17 (parameters)
 
 
-State 69
+State 70
 
-   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN type . $@2 block
+   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN option_type . $@2 block
 
     $default  reduce using rule 14 ($@2)
 
-    $@2  go to state 90
+    $@2  go to state 91
 
 
-State 70
+State 71
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1125,7 +1125,7 @@ State 70
     $default  reduce using rule 68 (expr)
 
 
-State 71
+State 72
 
    53 expr: NOT expr .
    55     | expr . LT expr
@@ -1142,22 +1142,22 @@ State 71
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
 
     $default  reduce using rule 53 (expr)
 
 
-State 72
+State 73
 
    54 expr: D_LPAREN expr . D_RPAREN
    55     | expr . LT expr
@@ -1174,452 +1174,450 @@ State 72
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD       shift, and go to state 73
-    MINUS     shift, and go to state 74
-    MUL       shift, and go to state 75
-    DIV       shift, and go to state 76
-    MOD       shift, and go to state 77
-    LT        shift, and go to state 78
-    LE        shift, and go to state 79
-    BE        shift, and go to state 80
-    BT        shift, and go to state 81
-    EQ        shift, and go to state 82
-    NE        shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    D_RPAREN  shift, and go to state 91
-
-
-State 73
-
-   65 expr: expr ADD . expr
-
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-
-    $default  reduce using rule 5 (ol)
-
-    identifer  go to state 59
-    ol         go to state 8
-    expr       go to state 92
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    ADD       shift, and go to state 74
+    MINUS     shift, and go to state 75
+    MUL       shift, and go to state 76
+    DIV       shift, and go to state 77
+    MOD       shift, and go to state 78
+    LT        shift, and go to state 79
+    LE        shift, and go to state 80
+    BE        shift, and go to state 81
+    BT        shift, and go to state 82
+    EQ        shift, and go to state 83
+    NE        shift, and go to state 84
+    AND       shift, and go to state 85
+    OR        shift, and go to state 86
+    D_RPAREN  shift, and go to state 92
 
 
 State 74
 
-   66 expr: expr MINUS . expr
+   65 expr: expr ADD . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 93
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 75
 
-   63 expr: expr MUL . expr
+   66 expr: expr MINUS . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 94
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 76
 
-   64 expr: expr DIV . expr
+   63 expr: expr MUL . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 95
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 77
 
-   67 expr: expr MOD . expr
+   64 expr: expr DIV . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 96
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 78
 
-   55 expr: expr LT . expr
+   67 expr: expr MOD . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 97
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 79
 
-   56 expr: expr LE . expr
+   55 expr: expr LT . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 98
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 80
 
-   58 expr: expr BE . expr
+   56 expr: expr LE . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 99
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 81
 
-   59 expr: expr BT . expr
+   58 expr: expr BE . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 100
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 82
 
-   57 expr: expr EQ . expr
+   59 expr: expr BT . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 101
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 83
 
-   60 expr: expr NE . expr
+   57 expr: expr EQ . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 102
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 84
 
-   61 expr: expr AND . expr
+   60 expr: expr NE . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 103
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 85
 
-   62 expr: expr OR . expr
+   61 expr: expr AND . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     expr       go to state 104
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 86
 
-   71 func_call: variable D_LPAREN . arguments D_RPAREN
+   62 expr: expr OR . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
-    D_RPAREN  reduce using rule 20 (arguments)
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    arguments  go to state 105
-    expr       go to state 106
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    expr       go to state 105
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 87
 
-   80 variable: variable D_LSQURE . expr D_RSQURE
+   71 func_call: variable D_LPAREN . arguments D_RPAREN
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
+    D_RPAREN  reduce using rule 20 (arguments)
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
+    arguments  go to state 106
     expr       go to state 107
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 88
 
-   40 arr_dec: VAR identifer type D_LSQURE expr D_RSQURE .
+   80 variable: variable D_LSQURE . expr D_RSQURE
 
-    $default  reduce using rule 40 (arr_dec)
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
+    LINE      shift, and go to state 1
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
+
+    $default  reduce using rule 5 (ol)
+
+    identifer  go to state 60
+    ol         go to state 8
+    expr       go to state 108
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 89
+
+   41 arr_dec: VAR identifer option_type D_LSQURE expr D_RSQURE .
+
+    $default  reduce using rule 41 (arr_dec)
+
+
+State 90
 
    19 parameters_: D_COMMA identifer . type parameters_
 
     D_COLON  shift, and go to state 30
 
-    $default  reduce using rule 43 (type)
-
-    type  go to state 108
+    type  go to state 109
 
 
-State 90
+State 91
 
-   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN type $@2 . block
+   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN option_type $@2 . block
 
     LINE  shift, and go to state 1
 
     $default  reduce using rule 5 (ol)
 
-    ol     go to state 109
-    block  go to state 110
+    ol     go to state 110
+    block  go to state 111
 
 
-State 91
+State 92
 
    54 expr: D_LPAREN expr D_RPAREN .
 
     $default  reduce using rule 54 (expr)
 
 
-State 92
+State 93
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1636,14 +1634,14 @@ State 92
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    MUL  shift, and go to state 75
-    DIV  shift, and go to state 76
-    MOD  shift, and go to state 77
+    MUL  shift, and go to state 76
+    DIV  shift, and go to state 77
+    MOD  shift, and go to state 78
 
     $default  reduce using rule 65 (expr)
 
 
-State 93
+State 94
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1660,14 +1658,14 @@ State 93
    66     | expr MINUS expr .
    67     | expr . MOD expr
 
-    MUL  shift, and go to state 75
-    DIV  shift, and go to state 76
-    MOD  shift, and go to state 77
+    MUL  shift, and go to state 76
+    DIV  shift, and go to state 77
+    MOD  shift, and go to state 78
 
     $default  reduce using rule 66 (expr)
 
 
-State 94
+State 95
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1687,7 +1685,7 @@ State 94
     $default  reduce using rule 63 (expr)
 
 
-State 95
+State 96
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1707,7 +1705,7 @@ State 95
     $default  reduce using rule 64 (expr)
 
 
-State 96
+State 97
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1727,7 +1725,7 @@ State 96
     $default  reduce using rule 67 (expr)
 
 
-State 97
+State 98
 
    55 expr: expr . LT expr
    55     | expr LT expr .
@@ -1744,16 +1742,16 @@ State 97
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
 
     $default  reduce using rule 55 (expr)
 
 
-State 98
+State 99
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1770,16 +1768,16 @@ State 98
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
 
     $default  reduce using rule 56 (expr)
 
 
-State 99
+State 100
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1796,16 +1794,16 @@ State 99
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
 
     $default  reduce using rule 58 (expr)
 
 
-State 100
+State 101
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1822,16 +1820,16 @@ State 100
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
 
     $default  reduce using rule 59 (expr)
 
 
-State 101
+State 102
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1848,16 +1846,16 @@ State 101
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
 
     $default  reduce using rule 57 (expr)
 
 
-State 102
+State 103
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1874,16 +1872,16 @@ State 102
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
 
     $default  reduce using rule 60 (expr)
 
 
-State 103
+State 104
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1900,22 +1898,22 @@ State 103
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
 
     $default  reduce using rule 61 (expr)
 
 
-State 104
+State 105
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -1932,30 +1930,30 @@ State 104
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
-    AND    shift, and go to state 84
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
 
     $default  reduce using rule 62 (expr)
 
 
-State 105
+State 106
 
    71 func_call: variable D_LPAREN arguments . D_RPAREN
 
-    D_RPAREN  shift, and go to state 111
+    D_RPAREN  shift, and go to state 112
 
 
-State 106
+State 107
 
    21 arguments: expr . arguments_
    55 expr: expr . LT expr
@@ -1972,27 +1970,27 @@ State 106
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD      shift, and go to state 73
-    MINUS    shift, and go to state 74
-    MUL      shift, and go to state 75
-    DIV      shift, and go to state 76
-    MOD      shift, and go to state 77
-    LT       shift, and go to state 78
-    LE       shift, and go to state 79
-    BE       shift, and go to state 80
-    BT       shift, and go to state 81
-    EQ       shift, and go to state 82
-    NE       shift, and go to state 83
-    AND      shift, and go to state 84
-    OR       shift, and go to state 85
-    D_COMMA  shift, and go to state 112
+    ADD      shift, and go to state 74
+    MINUS    shift, and go to state 75
+    MUL      shift, and go to state 76
+    DIV      shift, and go to state 77
+    MOD      shift, and go to state 78
+    LT       shift, and go to state 79
+    LE       shift, and go to state 80
+    BE       shift, and go to state 81
+    BT       shift, and go to state 82
+    EQ       shift, and go to state 83
+    NE       shift, and go to state 84
+    AND      shift, and go to state 85
+    OR       shift, and go to state 86
+    D_COMMA  shift, and go to state 113
 
     $default  reduce using rule 22 (arguments_)
 
-    arguments_  go to state 113
+    arguments_  go to state 114
 
 
-State 107
+State 108
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -2009,111 +2007,111 @@ State 107
    67     | expr . MOD expr
    80 variable: variable D_LSQURE expr . D_RSQURE
 
-    ADD       shift, and go to state 73
-    MINUS     shift, and go to state 74
-    MUL       shift, and go to state 75
-    DIV       shift, and go to state 76
-    MOD       shift, and go to state 77
-    LT        shift, and go to state 78
-    LE        shift, and go to state 79
-    BE        shift, and go to state 80
-    BT        shift, and go to state 81
-    EQ        shift, and go to state 82
-    NE        shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    D_RSQURE  shift, and go to state 114
-
-
-State 108
-
-   19 parameters_: D_COMMA identifer type . parameters_
-
-    D_COMMA  shift, and go to state 67
-
-    $default  reduce using rule 18 (parameters_)
-
-    parameters_  go to state 115
+    ADD       shift, and go to state 74
+    MINUS     shift, and go to state 75
+    MUL       shift, and go to state 76
+    DIV       shift, and go to state 77
+    MOD       shift, and go to state 78
+    LT        shift, and go to state 79
+    LE        shift, and go to state 80
+    BE        shift, and go to state 81
+    BT        shift, and go to state 82
+    EQ        shift, and go to state 83
+    NE        shift, and go to state 84
+    AND       shift, and go to state 85
+    OR        shift, and go to state 86
+    D_RSQURE  shift, and go to state 115
 
 
 State 109
 
-   51 block: ol . D_LBRACK $@3 ol statement_list ol D_RBRACK
+   19 parameters_: D_COMMA identifer type . parameters_
 
-    D_LBRACK  shift, and go to state 116
+    D_COMMA  shift, and go to state 68
+
+    $default  reduce using rule 18 (parameters_)
+
+    parameters_  go to state 116
 
 
 State 110
 
-   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN type $@2 block .
+   51 block: ol . D_LBRACK $@3 ol statement_list ol D_RBRACK
+
+    D_LBRACK  shift, and go to state 117
+
+
+State 111
+
+   15 fun_dec: DEF identifer D_LPAREN parameters D_RPAREN option_type $@2 block .
 
     $default  reduce using rule 15 (fun_dec)
 
 
-State 111
+State 112
 
    71 func_call: variable D_LPAREN arguments D_RPAREN .
 
     $default  reduce using rule 71 (func_call)
 
 
-State 112
+State 113
 
    23 arguments_: D_COMMA . expr arguments_
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    expr       go to state 117
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    expr       go to state 118
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
-State 113
+State 114
 
    21 arguments: expr arguments_ .
 
     $default  reduce using rule 21 (arguments)
 
 
-State 114
+State 115
 
    80 variable: variable D_LSQURE expr D_RSQURE .
 
     $default  reduce using rule 80 (variable)
 
 
-State 115
+State 116
 
    19 parameters_: D_COMMA identifer type parameters_ .
 
     $default  reduce using rule 19 (parameters_)
 
 
-State 116
+State 117
 
    51 block: ol D_LBRACK . $@3 ol statement_list ol D_RBRACK
 
     $default  reduce using rule 50 ($@3)
 
-    $@3  go to state 118
+    $@3  go to state 119
 
 
-State 117
+State 118
 
    23 arguments_: D_COMMA expr . arguments_
    55 expr: expr . LT expr
@@ -2130,27 +2128,27 @@ State 117
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD      shift, and go to state 73
-    MINUS    shift, and go to state 74
-    MUL      shift, and go to state 75
-    DIV      shift, and go to state 76
-    MOD      shift, and go to state 77
-    LT       shift, and go to state 78
-    LE       shift, and go to state 79
-    BE       shift, and go to state 80
-    BT       shift, and go to state 81
-    EQ       shift, and go to state 82
-    NE       shift, and go to state 83
-    AND      shift, and go to state 84
-    OR       shift, and go to state 85
-    D_COMMA  shift, and go to state 112
+    ADD      shift, and go to state 74
+    MINUS    shift, and go to state 75
+    MUL      shift, and go to state 76
+    DIV      shift, and go to state 77
+    MOD      shift, and go to state 78
+    LT       shift, and go to state 79
+    LE       shift, and go to state 80
+    BE       shift, and go to state 81
+    BT       shift, and go to state 82
+    EQ       shift, and go to state 83
+    NE       shift, and go to state 84
+    AND      shift, and go to state 85
+    OR       shift, and go to state 86
+    D_COMMA  shift, and go to state 113
 
     $default  reduce using rule 22 (arguments_)
 
-    arguments_  go to state 119
+    arguments_  go to state 120
 
 
-State 118
+State 119
 
    51 block: ol D_LBRACK $@3 . ol statement_list ol D_RBRACK
 
@@ -2159,130 +2157,173 @@ State 118
     LINE      [reduce using rule 5 (ol)]
     $default  reduce using rule 5 (ol)
 
-    ol  go to state 120
+    ol  go to state 121
 
 
-State 119
+State 120
 
    23 arguments_: D_COMMA expr arguments_ .
 
     $default  reduce using rule 23 (arguments_)
 
 
-State 120
+State 121
 
    51 block: ol D_LBRACK $@3 ol . statement_list ol D_RBRACK
 
-    DEF       shift, and go to state 14
-    FOR       shift, and go to state 121
-    IF        shift, and go to state 122
-    PRINT     shift, and go to state 123
-    PRINTLN   shift, and go to state 124
-    RETURN    shift, and go to state 125
-    VAL       shift, and go to state 15
-    VAR       shift, and go to state 16
-    WHILE     shift, and go to state 126
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-    READ      shift, and go to state 127
+    DEF           shift, and go to state 14
+    FOR           shift, and go to state 122
+    IF            shift, and go to state 123
+    PRINT         shift, and go to state 124
+    PRINTLN       shift, and go to state 125
+    RETURN        shift, and go to state 126
+    VAL           shift, and go to state 15
+    VAR           shift, and go to state 16
+    WHILE         shift, and go to state 127
+    EMPTY_RETURN  shift, and go to state 128
+    MINUS         shift, and go to state 51
+    NOT           shift, and go to state 52
+    LINE          shift, and go to state 1
+    D_LPAREN      shift, and go to state 53
+    TRUE          shift, and go to state 54
+    FALSE         shift, and go to state 55
+    V_INT         shift, and go to state 56
+    V_FLOAT       shift, and go to state 57
+    V_STRING      shift, and go to state 58
+    V_CHAR        shift, and go to state 59
+    READ          shift, and go to state 129
 
     LINE      [reduce using rule 24 (statement_list)]
     D_RBRACK  reduce using rule 24 (statement_list)
     $default  reduce using rule 5 (ol)
 
-    identifer       go to state 59
-    ol              go to state 128
-    declaration     go to state 129
+    identifer       go to state 60
+    ol              go to state 130
+    declaration     go to state 131
     fun_dec         go to state 19
-    statement_list  go to state 130
-    statement       go to state 131
+    statement_list  go to state 132
+    statement       go to state 133
     val_dec         go to state 20
     var_dec         go to state 21
     arr_dec         go to state 22
-    block           go to state 132
-    expr            go to state 133
-    number          go to state 61
-    func_call       go to state 62
-    value           go to state 63
-    variable        go to state 134
-    loop            go to state 135
-    if_             go to state 136
-    condition       go to state 137
-
-
-State 121
-
-   82 loop: FOR . D_LPAREN variable D_LARROW expr TO expr D_RPAREN statement
-
-    D_LPAREN  shift, and go to state 138
+    block           go to state 134
+    expr            go to state 135
+    number          go to state 62
+    func_call       go to state 63
+    value           go to state 64
+    variable        go to state 136
+    loop            go to state 137
+    condition       go to state 138
 
 
 State 122
 
-   83 if_: IF . D_LPAREN expr D_RPAREN ol statement
+   82 loop: FOR . D_LPAREN variable D_LARROW expr TO expr D_RPAREN statement
 
     D_LPAREN  shift, and go to state 139
 
 
 State 123
 
-   30 statement: PRINT . D_LPAREN expr D_RPAREN
+   83 condition: IF . D_LPAREN expr D_RPAREN ol statement
+   84          | IF . D_LPAREN expr D_RPAREN ol statement ELSE statement
 
     D_LPAREN  shift, and go to state 140
 
 
 State 124
 
-   31 statement: PRINTLN . D_LPAREN expr D_RPAREN
+   30 statement: PRINT . expr
 
-    D_LPAREN  shift, and go to state 141
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
+    LINE      shift, and go to state 1
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
+
+    $default  reduce using rule 5 (ol)
+
+    identifer  go to state 60
+    ol         go to state 8
+    expr       go to state 141
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 125
 
-   33 statement: RETURN . option_expr
+   31 statement: PRINTLN . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
-    IDENTIFIER  reduce using rule 5 (ol)
-    LINE        [reduce using rule 41 (option_expr)]
-    $default    reduce using rule 41 (option_expr)
+    $default  reduce using rule 5 (ol)
 
-    identifer    go to state 59
-    ol           go to state 8
-    option_expr  go to state 142
-    expr         go to state 143
-    number       go to state 61
-    func_call    go to state 62
-    value        go to state 63
-    variable     go to state 64
+    identifer  go to state 60
+    ol         go to state 8
+    expr       go to state 142
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 126
+
+   34 statement: RETURN . expr
+
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
+    LINE      shift, and go to state 1
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
+
+    $default  reduce using rule 5 (ol)
+
+    identifer  go to state 60
+    ol         go to state 8
+    expr       go to state 143
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
+
+
+State 127
 
    81 loop: WHILE . D_LPAREN expr D_RPAREN statement
 
     D_LPAREN  shift, and go to state 144
 
 
-State 127
+State 128
+
+   33 statement: EMPTY_RETURN .
+
+    $default  reduce using rule 33 (statement)
+
+
+State 129
 
    32 statement: READ . variable
 
@@ -2290,28 +2331,28 @@ State 127
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
     variable   go to state 145
 
 
-State 128
+State 130
 
     3 identifer: ol . IDENTIFIER
    51 block: ol . D_LBRACK $@3 ol statement_list ol D_RBRACK
 
     IDENTIFIER  shift, and go to state 10
-    D_LBRACK    shift, and go to state 116
+    D_LBRACK    shift, and go to state 117
 
 
-State 129
+State 131
 
    27 statement: declaration .
 
     $default  reduce using rule 27 (statement)
 
 
-State 130
+State 132
 
    26 statement_list: statement_list . line statement
    51 block: ol D_LBRACK $@3 ol statement_list . ol D_RBRACK
@@ -2324,21 +2365,21 @@ State 130
     ol    go to state 147
 
 
-State 131
+State 133
 
    25 statement_list: statement .
 
     $default  reduce using rule 25 (statement_list)
 
 
-State 132
+State 134
 
-   34 statement: block .
+   35 statement: block .
 
-    $default  reduce using rule 34 (statement)
+    $default  reduce using rule 35 (statement)
 
 
-State 133
+State 135
 
    29 statement: expr .
    55 expr: expr . LT expr
@@ -2355,64 +2396,52 @@ State 133
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
-    AND    shift, and go to state 84
-    OR     shift, and go to state 85
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
+    OR     shift, and go to state 86
 
     $default  reduce using rule 29 (statement)
 
 
-State 134
+State 136
 
    28 statement: variable . ASSIGN expr
    71 func_call: variable . D_LPAREN arguments D_RPAREN
    76 value: variable .
    80 variable: variable . D_LSQURE expr D_RSQURE
 
-    D_LPAREN  shift, and go to state 86
-    D_LSQURE  shift, and go to state 87
+    D_LPAREN  shift, and go to state 87
+    D_LSQURE  shift, and go to state 88
     ASSIGN    shift, and go to state 148
 
     $default  reduce using rule 76 (value)
 
 
-State 135
-
-   35 statement: loop .
-
-    $default  reduce using rule 35 (statement)
-
-
-State 136
-
-   85 condition: if_ .
-   86          | if_ . else_
-
-    ELSE  shift, and go to state 149
-
-    $default  reduce using rule 85 (condition)
-
-    else_  go to state 150
-
-
 State 137
 
-   36 statement: condition .
+   36 statement: loop .
 
     $default  reduce using rule 36 (statement)
 
 
 State 138
+
+   37 statement: condition .
+
+    $default  reduce using rule 37 (statement)
+
+
+State 139
 
    82 loop: FOR D_LPAREN . variable D_LARROW expr TO expr D_RPAREN statement
 
@@ -2420,99 +2449,41 @@ State 138
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    variable   go to state 151
-
-
-State 139
-
-   83 if_: IF D_LPAREN . expr D_RPAREN ol statement
-
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-
-    $default  reduce using rule 5 (ol)
-
-    identifer  go to state 59
-    ol         go to state 8
-    expr       go to state 152
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    variable   go to state 149
 
 
 State 140
 
-   30 statement: PRINT D_LPAREN . expr D_RPAREN
+   83 condition: IF D_LPAREN . expr D_RPAREN ol statement
+   84          | IF D_LPAREN . expr D_RPAREN ol statement ELSE statement
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    expr       go to state 153
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    expr       go to state 150
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 141
 
-   31 statement: PRINTLN D_LPAREN . expr D_RPAREN
-
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-
-    $default  reduce using rule 5 (ol)
-
-    identifer  go to state 59
-    ol         go to state 8
-    expr       go to state 154
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
-
-
-State 142
-
-   33 statement: RETURN option_expr .
-
-    $default  reduce using rule 33 (statement)
-
-
-State 143
-
-   42 option_expr: expr .
+   30 statement: PRINT expr .
    55 expr: expr . LT expr
    56     | expr . LE expr
    57     | expr . EQ expr
@@ -2527,47 +2498,115 @@ State 143
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
-    AND    shift, and go to state 84
-    OR     shift, and go to state 85
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
+    OR     shift, and go to state 86
 
-    $default  reduce using rule 42 (option_expr)
+    $default  reduce using rule 30 (statement)
+
+
+State 142
+
+   31 statement: PRINTLN expr .
+   55 expr: expr . LT expr
+   56     | expr . LE expr
+   57     | expr . EQ expr
+   58     | expr . BE expr
+   59     | expr . BT expr
+   60     | expr . NE expr
+   61     | expr . AND expr
+   62     | expr . OR expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . ADD expr
+   66     | expr . MINUS expr
+   67     | expr . MOD expr
+
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
+    OR     shift, and go to state 86
+
+    $default  reduce using rule 31 (statement)
+
+
+State 143
+
+   34 statement: RETURN expr .
+   55 expr: expr . LT expr
+   56     | expr . LE expr
+   57     | expr . EQ expr
+   58     | expr . BE expr
+   59     | expr . BT expr
+   60     | expr . NE expr
+   61     | expr . AND expr
+   62     | expr . OR expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . ADD expr
+   66     | expr . MINUS expr
+   67     | expr . MOD expr
+
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
+    OR     shift, and go to state 86
+
+    $default  reduce using rule 34 (statement)
 
 
 State 144
 
    81 loop: WHILE D_LPAREN . expr D_RPAREN statement
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    expr       go to state 155
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    expr       go to state 151
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 145
@@ -2575,7 +2614,7 @@ State 145
    32 statement: READ variable .
    80 variable: variable . D_LSQURE expr D_RSQURE
 
-    D_LSQURE  shift, and go to state 87
+    D_LSQURE  shift, and go to state 88
 
     $default  reduce using rule 32 (statement)
 
@@ -2584,243 +2623,125 @@ State 146
 
    26 statement_list: statement_list line . statement
 
-    DEF       shift, and go to state 14
-    FOR       shift, and go to state 121
-    IF        shift, and go to state 122
-    PRINT     shift, and go to state 123
-    PRINTLN   shift, and go to state 124
-    RETURN    shift, and go to state 125
-    VAL       shift, and go to state 15
-    VAR       shift, and go to state 16
-    WHILE     shift, and go to state 126
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-    READ      shift, and go to state 127
+    DEF           shift, and go to state 14
+    FOR           shift, and go to state 122
+    IF            shift, and go to state 123
+    PRINT         shift, and go to state 124
+    PRINTLN       shift, and go to state 125
+    RETURN        shift, and go to state 126
+    VAL           shift, and go to state 15
+    VAR           shift, and go to state 16
+    WHILE         shift, and go to state 127
+    EMPTY_RETURN  shift, and go to state 128
+    MINUS         shift, and go to state 51
+    NOT           shift, and go to state 52
+    LINE          shift, and go to state 1
+    D_LPAREN      shift, and go to state 53
+    TRUE          shift, and go to state 54
+    FALSE         shift, and go to state 55
+    V_INT         shift, and go to state 56
+    V_FLOAT       shift, and go to state 57
+    V_STRING      shift, and go to state 58
+    V_CHAR        shift, and go to state 59
+    READ          shift, and go to state 129
 
     $default  reduce using rule 5 (ol)
 
-    identifer    go to state 59
-    ol           go to state 128
-    declaration  go to state 129
+    identifer    go to state 60
+    ol           go to state 130
+    declaration  go to state 131
     fun_dec      go to state 19
-    statement    go to state 156
+    statement    go to state 152
     val_dec      go to state 20
     var_dec      go to state 21
     arr_dec      go to state 22
-    block        go to state 132
-    expr         go to state 133
-    number       go to state 61
-    func_call    go to state 62
-    value        go to state 63
-    variable     go to state 134
-    loop         go to state 135
-    if_          go to state 136
-    condition    go to state 137
+    block        go to state 134
+    expr         go to state 135
+    number       go to state 62
+    func_call    go to state 63
+    value        go to state 64
+    variable     go to state 136
+    loop         go to state 137
+    condition    go to state 138
 
 
 State 147
 
    51 block: ol D_LBRACK $@3 ol statement_list ol . D_RBRACK
 
-    D_RBRACK  shift, and go to state 157
+    D_RBRACK  shift, and go to state 153
 
 
 State 148
 
    28 statement: variable ASSIGN . expr
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    expr       go to state 158
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    expr       go to state 154
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
 State 149
 
-   84 else_: ELSE . statement
+   80 variable: variable . D_LSQURE expr D_RSQURE
+   82 loop: FOR D_LPAREN variable . D_LARROW expr TO expr D_RPAREN statement
 
-    DEF       shift, and go to state 14
-    FOR       shift, and go to state 121
-    IF        shift, and go to state 122
-    PRINT     shift, and go to state 123
-    PRINTLN   shift, and go to state 124
-    RETURN    shift, and go to state 125
-    VAL       shift, and go to state 15
-    VAR       shift, and go to state 16
-    WHILE     shift, and go to state 126
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-    READ      shift, and go to state 127
-
-    $default  reduce using rule 5 (ol)
-
-    identifer    go to state 59
-    ol           go to state 128
-    declaration  go to state 129
-    fun_dec      go to state 19
-    statement    go to state 159
-    val_dec      go to state 20
-    var_dec      go to state 21
-    arr_dec      go to state 22
-    block        go to state 132
-    expr         go to state 133
-    number       go to state 61
-    func_call    go to state 62
-    value        go to state 63
-    variable     go to state 134
-    loop         go to state 135
-    if_          go to state 136
-    condition    go to state 137
+    D_LSQURE  shift, and go to state 88
+    D_LARROW  shift, and go to state 155
 
 
 State 150
 
-   86 condition: if_ else_ .
+   55 expr: expr . LT expr
+   56     | expr . LE expr
+   57     | expr . EQ expr
+   58     | expr . BE expr
+   59     | expr . BT expr
+   60     | expr . NE expr
+   61     | expr . AND expr
+   62     | expr . OR expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . ADD expr
+   66     | expr . MINUS expr
+   67     | expr . MOD expr
+   83 condition: IF D_LPAREN expr . D_RPAREN ol statement
+   84          | IF D_LPAREN expr . D_RPAREN ol statement ELSE statement
 
-    $default  reduce using rule 86 (condition)
+    ADD       shift, and go to state 74
+    MINUS     shift, and go to state 75
+    MUL       shift, and go to state 76
+    DIV       shift, and go to state 77
+    MOD       shift, and go to state 78
+    LT        shift, and go to state 79
+    LE        shift, and go to state 80
+    BE        shift, and go to state 81
+    BT        shift, and go to state 82
+    EQ        shift, and go to state 83
+    NE        shift, and go to state 84
+    AND       shift, and go to state 85
+    OR        shift, and go to state 86
+    D_RPAREN  shift, and go to state 156
 
 
 State 151
-
-   80 variable: variable . D_LSQURE expr D_RSQURE
-   82 loop: FOR D_LPAREN variable . D_LARROW expr TO expr D_RPAREN statement
-
-    D_LSQURE  shift, and go to state 87
-    D_LARROW  shift, and go to state 160
-
-
-State 152
-
-   55 expr: expr . LT expr
-   56     | expr . LE expr
-   57     | expr . EQ expr
-   58     | expr . BE expr
-   59     | expr . BT expr
-   60     | expr . NE expr
-   61     | expr . AND expr
-   62     | expr . OR expr
-   63     | expr . MUL expr
-   64     | expr . DIV expr
-   65     | expr . ADD expr
-   66     | expr . MINUS expr
-   67     | expr . MOD expr
-   83 if_: IF D_LPAREN expr . D_RPAREN ol statement
-
-    ADD       shift, and go to state 73
-    MINUS     shift, and go to state 74
-    MUL       shift, and go to state 75
-    DIV       shift, and go to state 76
-    MOD       shift, and go to state 77
-    LT        shift, and go to state 78
-    LE        shift, and go to state 79
-    BE        shift, and go to state 80
-    BT        shift, and go to state 81
-    EQ        shift, and go to state 82
-    NE        shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    D_RPAREN  shift, and go to state 161
-
-
-State 153
-
-   30 statement: PRINT D_LPAREN expr . D_RPAREN
-   55 expr: expr . LT expr
-   56     | expr . LE expr
-   57     | expr . EQ expr
-   58     | expr . BE expr
-   59     | expr . BT expr
-   60     | expr . NE expr
-   61     | expr . AND expr
-   62     | expr . OR expr
-   63     | expr . MUL expr
-   64     | expr . DIV expr
-   65     | expr . ADD expr
-   66     | expr . MINUS expr
-   67     | expr . MOD expr
-
-    ADD       shift, and go to state 73
-    MINUS     shift, and go to state 74
-    MUL       shift, and go to state 75
-    DIV       shift, and go to state 76
-    MOD       shift, and go to state 77
-    LT        shift, and go to state 78
-    LE        shift, and go to state 79
-    BE        shift, and go to state 80
-    BT        shift, and go to state 81
-    EQ        shift, and go to state 82
-    NE        shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    D_RPAREN  shift, and go to state 162
-
-
-State 154
-
-   31 statement: PRINTLN D_LPAREN expr . D_RPAREN
-   55 expr: expr . LT expr
-   56     | expr . LE expr
-   57     | expr . EQ expr
-   58     | expr . BE expr
-   59     | expr . BT expr
-   60     | expr . NE expr
-   61     | expr . AND expr
-   62     | expr . OR expr
-   63     | expr . MUL expr
-   64     | expr . DIV expr
-   65     | expr . ADD expr
-   66     | expr . MINUS expr
-   67     | expr . MOD expr
-
-    ADD       shift, and go to state 73
-    MINUS     shift, and go to state 74
-    MUL       shift, and go to state 75
-    DIV       shift, and go to state 76
-    MOD       shift, and go to state 77
-    LT        shift, and go to state 78
-    LE        shift, and go to state 79
-    BE        shift, and go to state 80
-    BT        shift, and go to state 81
-    EQ        shift, and go to state 82
-    NE        shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    D_RPAREN  shift, and go to state 163
-
-
-State 155
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -2837,37 +2758,37 @@ State 155
    67     | expr . MOD expr
    81 loop: WHILE D_LPAREN expr . D_RPAREN statement
 
-    ADD       shift, and go to state 73
-    MINUS     shift, and go to state 74
-    MUL       shift, and go to state 75
-    DIV       shift, and go to state 76
-    MOD       shift, and go to state 77
-    LT        shift, and go to state 78
-    LE        shift, and go to state 79
-    BE        shift, and go to state 80
-    BT        shift, and go to state 81
-    EQ        shift, and go to state 82
-    NE        shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    D_RPAREN  shift, and go to state 164
+    ADD       shift, and go to state 74
+    MINUS     shift, and go to state 75
+    MUL       shift, and go to state 76
+    DIV       shift, and go to state 77
+    MOD       shift, and go to state 78
+    LT        shift, and go to state 79
+    LE        shift, and go to state 80
+    BE        shift, and go to state 81
+    BT        shift, and go to state 82
+    EQ        shift, and go to state 83
+    NE        shift, and go to state 84
+    AND       shift, and go to state 85
+    OR        shift, and go to state 86
+    D_RPAREN  shift, and go to state 157
 
 
-State 156
+State 152
 
    26 statement_list: statement_list line statement .
 
     $default  reduce using rule 26 (statement_list)
 
 
-State 157
+State 153
 
    51 block: ol D_LBRACK $@3 ol statement_list ol D_RBRACK .
 
     $default  reduce using rule 51 (block)
 
 
-State 158
+State 154
 
    28 statement: variable ASSIGN expr .
    55 expr: expr . LT expr
@@ -2884,129 +2805,109 @@ State 158
    66     | expr . MINUS expr
    67     | expr . MOD expr
 
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
-    AND    shift, and go to state 84
-    OR     shift, and go to state 85
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
+    OR     shift, and go to state 86
 
     $default  reduce using rule 28 (statement)
 
 
-State 159
-
-   84 else_: ELSE statement .
-
-    $default  reduce using rule 84 (else_)
-
-
-State 160
+State 155
 
    82 loop: FOR D_LPAREN variable D_LARROW . expr TO expr D_RPAREN statement
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    expr       go to state 165
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    expr       go to state 158
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
-State 161
+State 156
 
-   83 if_: IF D_LPAREN expr D_RPAREN . ol statement
+   83 condition: IF D_LPAREN expr D_RPAREN . ol statement
+   84          | IF D_LPAREN expr D_RPAREN . ol statement ELSE statement
 
     LINE  shift, and go to state 1
 
     LINE      [reduce using rule 5 (ol)]
     $default  reduce using rule 5 (ol)
 
-    ol  go to state 166
+    ol  go to state 159
 
 
-State 162
-
-   30 statement: PRINT D_LPAREN expr D_RPAREN .
-
-    $default  reduce using rule 30 (statement)
-
-
-State 163
-
-   31 statement: PRINTLN D_LPAREN expr D_RPAREN .
-
-    $default  reduce using rule 31 (statement)
-
-
-State 164
+State 157
 
    81 loop: WHILE D_LPAREN expr D_RPAREN . statement
 
-    DEF       shift, and go to state 14
-    FOR       shift, and go to state 121
-    IF        shift, and go to state 122
-    PRINT     shift, and go to state 123
-    PRINTLN   shift, and go to state 124
-    RETURN    shift, and go to state 125
-    VAL       shift, and go to state 15
-    VAR       shift, and go to state 16
-    WHILE     shift, and go to state 126
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-    READ      shift, and go to state 127
+    DEF           shift, and go to state 14
+    FOR           shift, and go to state 122
+    IF            shift, and go to state 123
+    PRINT         shift, and go to state 124
+    PRINTLN       shift, and go to state 125
+    RETURN        shift, and go to state 126
+    VAL           shift, and go to state 15
+    VAR           shift, and go to state 16
+    WHILE         shift, and go to state 127
+    EMPTY_RETURN  shift, and go to state 128
+    MINUS         shift, and go to state 51
+    NOT           shift, and go to state 52
+    LINE          shift, and go to state 1
+    D_LPAREN      shift, and go to state 53
+    TRUE          shift, and go to state 54
+    FALSE         shift, and go to state 55
+    V_INT         shift, and go to state 56
+    V_FLOAT       shift, and go to state 57
+    V_STRING      shift, and go to state 58
+    V_CHAR        shift, and go to state 59
+    READ          shift, and go to state 129
 
     $default  reduce using rule 5 (ol)
 
-    identifer    go to state 59
-    ol           go to state 128
-    declaration  go to state 129
+    identifer    go to state 60
+    ol           go to state 130
+    declaration  go to state 131
     fun_dec      go to state 19
-    statement    go to state 167
+    statement    go to state 160
     val_dec      go to state 20
     var_dec      go to state 21
     arr_dec      go to state 22
-    block        go to state 132
-    expr         go to state 133
-    number       go to state 61
-    func_call    go to state 62
-    value        go to state 63
-    variable     go to state 134
-    loop         go to state 135
-    if_          go to state 136
-    condition    go to state 137
+    block        go to state 134
+    expr         go to state 135
+    number       go to state 62
+    func_call    go to state 63
+    value        go to state 64
+    variable     go to state 136
+    loop         go to state 137
+    condition    go to state 138
 
 
-State 165
+State 158
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -3023,109 +2924,113 @@ State 165
    67     | expr . MOD expr
    82 loop: FOR D_LPAREN variable D_LARROW expr . TO expr D_RPAREN statement
 
-    TO     shift, and go to state 168
-    ADD    shift, and go to state 73
-    MINUS  shift, and go to state 74
-    MUL    shift, and go to state 75
-    DIV    shift, and go to state 76
-    MOD    shift, and go to state 77
-    LT     shift, and go to state 78
-    LE     shift, and go to state 79
-    BE     shift, and go to state 80
-    BT     shift, and go to state 81
-    EQ     shift, and go to state 82
-    NE     shift, and go to state 83
-    AND    shift, and go to state 84
-    OR     shift, and go to state 85
+    TO     shift, and go to state 161
+    ADD    shift, and go to state 74
+    MINUS  shift, and go to state 75
+    MUL    shift, and go to state 76
+    DIV    shift, and go to state 77
+    MOD    shift, and go to state 78
+    LT     shift, and go to state 79
+    LE     shift, and go to state 80
+    BE     shift, and go to state 81
+    BT     shift, and go to state 82
+    EQ     shift, and go to state 83
+    NE     shift, and go to state 84
+    AND    shift, and go to state 85
+    OR     shift, and go to state 86
 
 
-State 166
+State 159
 
-   83 if_: IF D_LPAREN expr D_RPAREN ol . statement
+   83 condition: IF D_LPAREN expr D_RPAREN ol . statement
+   84          | IF D_LPAREN expr D_RPAREN ol . statement ELSE statement
 
-    DEF       shift, and go to state 14
-    FOR       shift, and go to state 121
-    IF        shift, and go to state 122
-    PRINT     shift, and go to state 123
-    PRINTLN   shift, and go to state 124
-    RETURN    shift, and go to state 125
-    VAL       shift, and go to state 15
-    VAR       shift, and go to state 16
-    WHILE     shift, and go to state 126
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-    READ      shift, and go to state 127
+    DEF           shift, and go to state 14
+    FOR           shift, and go to state 122
+    IF            shift, and go to state 123
+    PRINT         shift, and go to state 124
+    PRINTLN       shift, and go to state 125
+    RETURN        shift, and go to state 126
+    VAL           shift, and go to state 15
+    VAR           shift, and go to state 16
+    WHILE         shift, and go to state 127
+    EMPTY_RETURN  shift, and go to state 128
+    MINUS         shift, and go to state 51
+    NOT           shift, and go to state 52
+    LINE          shift, and go to state 1
+    D_LPAREN      shift, and go to state 53
+    TRUE          shift, and go to state 54
+    FALSE         shift, and go to state 55
+    V_INT         shift, and go to state 56
+    V_FLOAT       shift, and go to state 57
+    V_STRING      shift, and go to state 58
+    V_CHAR        shift, and go to state 59
+    READ          shift, and go to state 129
 
     $default  reduce using rule 5 (ol)
 
-    identifer    go to state 59
-    ol           go to state 128
-    declaration  go to state 129
+    identifer    go to state 60
+    ol           go to state 130
+    declaration  go to state 131
     fun_dec      go to state 19
-    statement    go to state 169
+    statement    go to state 162
     val_dec      go to state 20
     var_dec      go to state 21
     arr_dec      go to state 22
-    block        go to state 132
-    expr         go to state 133
-    number       go to state 61
-    func_call    go to state 62
-    value        go to state 63
-    variable     go to state 134
-    loop         go to state 135
-    if_          go to state 136
-    condition    go to state 137
+    block        go to state 134
+    expr         go to state 135
+    number       go to state 62
+    func_call    go to state 63
+    value        go to state 64
+    variable     go to state 136
+    loop         go to state 137
+    condition    go to state 138
 
 
-State 167
+State 160
 
    81 loop: WHILE D_LPAREN expr D_RPAREN statement .
 
     $default  reduce using rule 81 (loop)
 
 
-State 168
+State 161
 
    82 loop: FOR D_LPAREN variable D_LARROW expr TO . expr D_RPAREN statement
 
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
+    MINUS     shift, and go to state 51
+    NOT       shift, and go to state 52
     LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
+    D_LPAREN  shift, and go to state 53
+    TRUE      shift, and go to state 54
+    FALSE     shift, and go to state 55
+    V_INT     shift, and go to state 56
+    V_FLOAT   shift, and go to state 57
+    V_STRING  shift, and go to state 58
+    V_CHAR    shift, and go to state 59
 
     $default  reduce using rule 5 (ol)
 
-    identifer  go to state 59
+    identifer  go to state 60
     ol         go to state 8
-    expr       go to state 170
-    number     go to state 61
-    func_call  go to state 62
-    value      go to state 63
-    variable   go to state 64
+    expr       go to state 163
+    number     go to state 62
+    func_call  go to state 63
+    value      go to state 64
+    variable   go to state 65
 
 
-State 169
+State 162
 
-   83 if_: IF D_LPAREN expr D_RPAREN ol statement .
+   83 condition: IF D_LPAREN expr D_RPAREN ol statement .
+   84          | IF D_LPAREN expr D_RPAREN ol statement . ELSE statement
 
-    $default  reduce using rule 83 (if_)
+    ELSE  shift, and go to state 164
+
+    $default  reduce using rule 83 (condition)
 
 
-State 170
+State 163
 
    55 expr: expr . LT expr
    56     | expr . LE expr
@@ -3142,69 +3047,122 @@ State 170
    67     | expr . MOD expr
    82 loop: FOR D_LPAREN variable D_LARROW expr TO expr . D_RPAREN statement
 
-    ADD       shift, and go to state 73
-    MINUS     shift, and go to state 74
-    MUL       shift, and go to state 75
-    DIV       shift, and go to state 76
-    MOD       shift, and go to state 77
-    LT        shift, and go to state 78
-    LE        shift, and go to state 79
-    BE        shift, and go to state 80
-    BT        shift, and go to state 81
-    EQ        shift, and go to state 82
-    NE        shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    D_RPAREN  shift, and go to state 171
+    ADD       shift, and go to state 74
+    MINUS     shift, and go to state 75
+    MUL       shift, and go to state 76
+    DIV       shift, and go to state 77
+    MOD       shift, and go to state 78
+    LT        shift, and go to state 79
+    LE        shift, and go to state 80
+    BE        shift, and go to state 81
+    BT        shift, and go to state 82
+    EQ        shift, and go to state 83
+    NE        shift, and go to state 84
+    AND       shift, and go to state 85
+    OR        shift, and go to state 86
+    D_RPAREN  shift, and go to state 165
 
 
-State 171
+State 164
 
-   82 loop: FOR D_LPAREN variable D_LARROW expr TO expr D_RPAREN . statement
+   84 condition: IF D_LPAREN expr D_RPAREN ol statement ELSE . statement
 
-    DEF       shift, and go to state 14
-    FOR       shift, and go to state 121
-    IF        shift, and go to state 122
-    PRINT     shift, and go to state 123
-    PRINTLN   shift, and go to state 124
-    RETURN    shift, and go to state 125
-    VAL       shift, and go to state 15
-    VAR       shift, and go to state 16
-    WHILE     shift, and go to state 126
-    MINUS     shift, and go to state 50
-    NOT       shift, and go to state 51
-    LINE      shift, and go to state 1
-    D_LPAREN  shift, and go to state 52
-    TRUE      shift, and go to state 53
-    FALSE     shift, and go to state 54
-    V_INT     shift, and go to state 55
-    V_FLOAT   shift, and go to state 56
-    V_STRING  shift, and go to state 57
-    V_CHAR    shift, and go to state 58
-    READ      shift, and go to state 127
+    DEF           shift, and go to state 14
+    FOR           shift, and go to state 122
+    IF            shift, and go to state 123
+    PRINT         shift, and go to state 124
+    PRINTLN       shift, and go to state 125
+    RETURN        shift, and go to state 126
+    VAL           shift, and go to state 15
+    VAR           shift, and go to state 16
+    WHILE         shift, and go to state 127
+    EMPTY_RETURN  shift, and go to state 128
+    MINUS         shift, and go to state 51
+    NOT           shift, and go to state 52
+    LINE          shift, and go to state 1
+    D_LPAREN      shift, and go to state 53
+    TRUE          shift, and go to state 54
+    FALSE         shift, and go to state 55
+    V_INT         shift, and go to state 56
+    V_FLOAT       shift, and go to state 57
+    V_STRING      shift, and go to state 58
+    V_CHAR        shift, and go to state 59
+    READ          shift, and go to state 129
 
     $default  reduce using rule 5 (ol)
 
-    identifer    go to state 59
-    ol           go to state 128
-    declaration  go to state 129
+    identifer    go to state 60
+    ol           go to state 130
+    declaration  go to state 131
     fun_dec      go to state 19
-    statement    go to state 172
+    statement    go to state 166
     val_dec      go to state 20
     var_dec      go to state 21
     arr_dec      go to state 22
-    block        go to state 132
-    expr         go to state 133
-    number       go to state 61
-    func_call    go to state 62
-    value        go to state 63
-    variable     go to state 134
-    loop         go to state 135
-    if_          go to state 136
-    condition    go to state 137
+    block        go to state 134
+    expr         go to state 135
+    number       go to state 62
+    func_call    go to state 63
+    value        go to state 64
+    variable     go to state 136
+    loop         go to state 137
+    condition    go to state 138
 
 
-State 172
+State 165
+
+   82 loop: FOR D_LPAREN variable D_LARROW expr TO expr D_RPAREN . statement
+
+    DEF           shift, and go to state 14
+    FOR           shift, and go to state 122
+    IF            shift, and go to state 123
+    PRINT         shift, and go to state 124
+    PRINTLN       shift, and go to state 125
+    RETURN        shift, and go to state 126
+    VAL           shift, and go to state 15
+    VAR           shift, and go to state 16
+    WHILE         shift, and go to state 127
+    EMPTY_RETURN  shift, and go to state 128
+    MINUS         shift, and go to state 51
+    NOT           shift, and go to state 52
+    LINE          shift, and go to state 1
+    D_LPAREN      shift, and go to state 53
+    TRUE          shift, and go to state 54
+    FALSE         shift, and go to state 55
+    V_INT         shift, and go to state 56
+    V_FLOAT       shift, and go to state 57
+    V_STRING      shift, and go to state 58
+    V_CHAR        shift, and go to state 59
+    READ          shift, and go to state 129
+
+    $default  reduce using rule 5 (ol)
+
+    identifer    go to state 60
+    ol           go to state 130
+    declaration  go to state 131
+    fun_dec      go to state 19
+    statement    go to state 167
+    val_dec      go to state 20
+    var_dec      go to state 21
+    arr_dec      go to state 22
+    block        go to state 134
+    expr         go to state 135
+    number       go to state 62
+    func_call    go to state 63
+    value        go to state 64
+    variable     go to state 136
+    loop         go to state 137
+    condition    go to state 138
+
+
+State 166
+
+   84 condition: IF D_LPAREN expr D_RPAREN ol statement ELSE statement .
+
+    $default  reduce using rule 84 (condition)
+
+
+State 167
 
    82 loop: FOR D_LPAREN variable D_LARROW expr TO expr D_RPAREN statement .
 

@@ -1,0 +1,49 @@
+class example
+{
+field static int c
+method public static int add(int,int)
+max_stack 28
+max_locals 28
+{
+iload 0
+iload 1
+iadd
+ireturn
+iconst_0
+ireturn
+}
+method public static void main(java.lang.String [])
+max_stack 20
+max_locals 20
+{
+ldc 5
+ldc 10
+invokestatic int example.add(int,int)
+putstatic int example.c
+getstatic int example.c
+ldc 10
+isub
+ifgt L2
+iconst_0
+goto L3
+L2:
+iconst_1
+L3:
+ifeq Lfalse0
+getstatic java.io.PrintStream java.lang.System.out
+getstatic int example.c
+ineg
+invokevirtual void java.io.PrintStream.print(int)
+goto Lexit1
+Lfalse0:
+getstatic java.io.PrintStream java.lang.System.out
+getstatic int example.c
+invokevirtual void java.io.PrintStream.print(int)
+Lexit1:
+getstatic java.io.PrintStream java.lang.System.out
+ldc "Hello World"
+invokevirtual void java.io.PrintStream.println(java.lang.String)
+return
+}
+}
+

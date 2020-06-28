@@ -24,8 +24,8 @@ fib
     // compute the nth Fibonacci number
     while (n > 2) {
       var astringkkksdfasdfasdfasdf : string = "fuck"
-      var qqq : int [12]
-      qqq[1] = 12
+      // var qqq : int [12]
+      //qqq[1] = 12
       var a : int
       temp = 1 + 1
       while (n > 2) {
@@ -41,7 +41,7 @@ fib
       n = n - 1
     }
     var a = 'c'
-    for (a <- 10 to 100) print(fuck(1,2.0))
+    // for (a <- 10 to 100) print(fuck(1,2.0))
     // print result
     var you: float = fuck(12, 2.0)
     print ("Result of computation: ")
