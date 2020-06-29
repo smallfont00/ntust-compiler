@@ -35,7 +35,8 @@ object fib
     // print result
     print ("Result of computation2:")
     println (Fn)
-    n = 2
+    //n = 2
+    //println ("Fn > 15")
     if (n <= 2)
     {
       var ttt = 10 * 2
@@ -43,7 +44,8 @@ object fib
       else println("n < 2")
       if (Fn > 5)
         if (Fn > 10)
-          if (Fn > 15) println ("Fn > 15")
+          if (Fn > 15) 
+            println ("Fn > 15")
           else println ("10 < Fn < 15")
     } 
     else

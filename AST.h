@@ -34,7 +34,7 @@ void Error(const char* format, ...);
 
 struct AST {
     virtual std::string codegen() { return ""; };
-    static std::string label(std::string = "L");
+    static std::string label(std::string = "WR");
 
    private:
     static Counter label_counter;
@@ -98,8 +98,9 @@ struct NullAST : ExprAST {};
 struct ValueAST : ExprAST {
     std::string value;
     std::string load;
+    bool is_from_const = true;
     ValueAST(std::string, std::string);
-    ValueAST(VariableAST*);
+    explicit ValueAST(VariableAST*);
     std::string codegen() override;
 };
 

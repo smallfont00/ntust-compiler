@@ -14,5 +14,6 @@ int main(int argc, char** argv) {
     yyparse();
 
     auto obj = dynamic_cast<ObjectAST*>(current_scope);
+    obj->find("main");
     std::cout << obj->codegen() << std::endl;
 }

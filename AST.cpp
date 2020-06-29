@@ -5,7 +5,9 @@
 void Error(const char* format, ...) {
     va_list args;
     va_start(args, format);
+    fprintf(stderr, "\n");
     vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
     va_end(args);
     exit(0);
 }
@@ -40,7 +42,9 @@ ObjectAST::ObjectAST(std::string name) : NamedAST(name) {
     auto print = new FunctionAST("print", "void", {new VariableAST(" ", "any")});
     print->loader = [](std::string& text, std::vector<ExprAST*> args) {
         text = "getstatic java.io.PrintStream java.lang.System.out\n" + text;
-        text += "invokevirtual void java.io.PrintStream.print(" + args[0]->type + ")\n";
+        std::string vtype = args[0]->type;
+        if (args[0]->type == "bool") vtype = "int";
+        text += "invokevirtual void java.io.PrintStream.print(" + vtype + ")\n";
     };
     table[print->name] = print;
 
@@ -48,7 +52,9 @@ ObjectAST::ObjectAST(std::string name) : NamedAST(name) {
     auto println = new FunctionAST("println", "void", {new VariableAST(" ", "any")});
     println->loader = [](std::string& text, std::vector<ExprAST*> args) {
         text = "getstatic java.io.PrintStream java.lang.System.out\n" + text;
-        text += "invokevirtual void java.io.PrintStream.println(" + args[0]->type + ")\n";
+        std::string vtype = args[0]->type;
+        if (args[0]->type == "bool") vtype = "int";
+        text += "invokevirtual void java.io.PrintStream.println(" + vtype + ")\n";
     };
     table[println->name] = println;
 
@@ -69,7 +75,7 @@ void ObjectAST::push(AST* ast) {
         if (t1->unchange) {
             if (!t1->init_value) Error("[Object <%s>] Const variable must be initialize\n", name.c_str());
             auto t2 = dynamic_cast<ValueAST*>(t1->init_value);
-            if (!t2) Error("[Object <%s>] Static const variable must be initialize with simple value\n", name.c_str());
+            if ((!t2) || (!t2->is_from_const)) Error("[Object <%s>] Static const variable must be initialize with simple value\n", name.c_str());
             t1->load = "ldc " + t2->value + "\n";
             table[t1->name] = t1;
             return;
@@ -78,8 +84,11 @@ void ObjectAST::push(AST* ast) {
         table[t1->name] = t1;
         t1->identifier = name + "." + t1->name;
 
-        t1->load = "getstatic " + t1->type + " " + t1->identifier + "\n";
-        t1->store = "putstatic " + t1->type + " " + t1->identifier + "\n";
+        std::string vtype = t1->type;
+        if (t1->type == "bool") vtype = "int";
+
+        t1->load = "getstatic " + vtype + " " + t1->identifier + "\n";
+        t1->store = "putstatic " + vtype + " " + t1->identifier + "\n";
 
         std::string value;
         if (t1->init_value) {
@@ -87,7 +96,7 @@ void ObjectAST::push(AST* ast) {
             if (!t2) Error("[Object <%s>] Static variable must be initialize with simple value\n", name.c_str());
             value = " = " + t2->value;
         }
-        members.push_back(new WriterAST("field static " + t1->type + " " + t1->name + value + "\n"));
+        members.push_back(new WriterAST("field static " + vtype + " " + t1->name + value + "\n"));
         return;
     }
     if (auto t1 = dynamic_cast<FunctionAST*>(ast)) {
@@ -99,7 +108,9 @@ void ObjectAST::push(AST* ast) {
         }
 
         t1->loader = [t1](std::string& text, std::vector<ExprAST*> args) {
-            text += "invokestatic " + t1->type + " " + t1->identifier + t1->params_list() + "\n";
+            std::string vtype = t1->type;
+            if (t1->type == "bool") vtype = "int";
+            text += "invokestatic " + vtype + " " + t1->identifier + t1->params_list() + "\n";
         };
         members.push_back(t1);
         return;
@@ -156,8 +167,13 @@ std::string FunctionAST::params_list() {
     std::string text;
     text += "(";
     if (!params.empty()) {
-        text += params[0]->type;
-        for (int i = 1; i < params.size(); i++) text += "," + params[i]->type;
+        std::string vtype = params[0]->type;
+        if (params[0]->type == "bool") vtype = "int";
+        text += vtype;
+        for (int i = 1; i < params.size(); i++) {
+            if (params[i]->type == "bool") vtype = "int";
+            text += "," + vtype;
+        }
     }
     text += ")";
     return text;
@@ -165,7 +181,9 @@ std::string FunctionAST::params_list() {
 
 std::string FunctionAST::codegen() {
     std::string text;
-    text += "method public static " + type + " " + name + params_list() + "\n";
+    std::string vtype = type;
+    if (type == "bool") vtype = "int";
+    text += "method public static " + vtype + " " + name + params_list() + "\n";
     text += "max_stack " + std::to_string(20 + (block->counter->size()) * 4) + "\n";
     text += "max_locals " + std::to_string(20 + (block->counter->size()) * 4) + "\n";
     text += "{\n";
@@ -186,7 +204,7 @@ std::string FunctionAST::invoke(std::vector<ExprAST*> exprs) {
 
 ValueAST::ValueAST(std::string type, std::string value) : TypedAST(type), value(value), load("ldc " + value + "\n"){};
 
-ValueAST::ValueAST(VariableAST* var) : TypedAST(var->type), value(var->identifier), load(var->load){};
+ValueAST::ValueAST(VariableAST* var) : TypedAST(var->type), value(var->identifier), load(var->load), is_from_const(var->unchange){};
 
 std::string ValueAST::codegen() {
     return load;
@@ -259,11 +277,13 @@ std::string BinaryExprAST::action() {
     }
     if (state[op] == OP::COMPARE) {
         std::string text;
-        text += action_type + "sub\n";
+        if (action_type == "f")
+            text += "fcmpg\n";
+        else
+            text += action_type + "sub\n";
         auto L1 = label();
         auto L2 = label();
         std::string if_action;
-        if (action_type == "f") if_action += "fcmpg\n";
         if (op == "<") if_action += "iflt";
         if (op == "<=") if_action += "ifle";
         if (op == "==") if_action += "ifeq";
@@ -277,13 +297,11 @@ std::string BinaryExprAST::action() {
         text += "goto " + L2 + "\n";
 
         //text += "goto " + L1 + "\n";
-        text += "nop\n";
         text += L1 + ":\n";
 
         text += "iconst_1\n";
 
         //text += "goto " + L2 + "\n";
-        text += "nop\n";
         text += L2 + ":\n";
         return text;
     }
@@ -315,9 +333,8 @@ SingleExprAST::SingleExprAST(std::string op, ExprAST* operand) : op(op), operand
         return;
     }
     if (op == "!" && type_check({operand}, {"bool", "int"})) {
-        type = operand->type;
-        if (operand->type == "int") action_type = "i";
-        if (operand->type == "float") action_type = "f";
+        type = "bool";
+        action_type = "i";
         return;
     }
     Error("[SingleExpr] no match for <op:%s>\n", op.c_str());
@@ -374,7 +391,6 @@ IfAST::IfAST(ExprAST* expr, StatementAST* tr, StatementAST* fa) : expr(expr), tr
 
 std::string IfAST::codegen() {
     std::string text;
-    text += "\n\n";
     auto LF = label();
     auto LE = label();
     bool is_false_stmt_exist = !dynamic_cast<NullAST*>(false_stmt);
@@ -395,11 +411,12 @@ std::string IfAST::codegen() {
         text += "nop\n";
         text += LE + ":\n";
     }
-    text += "\n\n";
     return text;
 };
 
-WhileAST::WhileAST(ExprAST* expr, StatementAST* stmt) : expr(expr), stmt(stmt){};
+WhileAST::WhileAST(ExprAST* expr, StatementAST* stmt) : expr(expr), stmt(stmt) {
+    if (!TypedAST::type_check({expr}, {"bool"})) Error("[WHILE] has to be boolean expression\n");
+};
 
 std::string WhileAST::codegen() {
     std::string text;
@@ -416,7 +433,7 @@ std::string WhileAST::codegen() {
     text += "goto " + LB + "\n";
 
     //text += "goto " + LE + "\n";
-    text += "nop\n";
+    //text += "nop\n";
     text += LE + ":\n";
 
     return text;

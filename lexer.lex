@@ -46,8 +46,8 @@ int return_flag = 0;
 //   * INSERT:          Maintain the text buffer and Linked list structure of page.
 //   * INSERT_STR:      Same as INSERT but cut off the two double quotes of string when inserting to <line>;
 //   * LINE:            Maintain and Echo the line message. 
-#define INSERT      { strcat(text, yytext); fprintf(stderr,"%s", yytext); insert(line, yytext); }
-#define INSERT_STR  { strcat(text, yytext); fprintf(stderr,"%s", yytext); insert(line, yytext); }
+#define INSERT      { strcat(text, yytext); fprintf(stderr,"%s", yytext); /*insert(line, yytext);*/ }
+#define INSERT_STR  { strcat(text, yytext); fprintf(stderr,"%s", yytext); /*insert(line, yytext);*/ }
 #define LINE_SKIP   { strcat(text, yytext); fprintf(stderr,"%s", yytext); context_len++; /*printf("%d: %s", context_len, text);*/ text[0] = '\0';}
 
 // The number of line.

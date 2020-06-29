@@ -7,39 +7,41 @@ max_locals 24
 iload 0
 ldc 0
 isub
-ifle L2
+ifle WR2
 iconst_0
-goto L3
-L2:
+goto WR3
+WR2:
 iconst_1
-L3:
-ifeq Lfalse0
+WR3:
+ifeq WR0
 ldc 0
 ireturn
-Lfalse0:
+nop
+WR0:
 iload 0
 ldc 1
 isub
-ifeq L6
+ifeq WR6
 iconst_0
-goto L7
-L6:
+goto WR7
+WR6:
 iconst_1
-L7:
+WR7:
 iload 0
 ldc 2
 isub
-ifeq L8
+ifeq WR8
 iconst_0
-goto L9
-L8:
+goto WR9
+WR8:
 iconst_1
-L9:
+WR9:
 ior
-ifeq Lfalse4
+ifeq WR4
 ldc 1
 ireturn
-Lfalse4:
+nop
+WR4:
 iload 0
 ldc 1
 isub

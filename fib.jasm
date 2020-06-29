@@ -11,17 +11,18 @@ ldc 1
 istore 1
 ldc 1
 istore 2
-L0:
+nop
+WR0:
 iload 0
 ldc 2
 isub
-ifgt L2
+ifgt WR2
 iconst_0
-goto L3
-L2:
+goto WR3
+WR2:
 iconst_1
-L3:
-ifeq L1
+WR3:
+ifeq WR1
 iload 1
 istore 3
 iload 1
@@ -34,8 +35,8 @@ iload 0
 ldc 1
 isub
 istore 0
-goto L0
-L1:
+goto WR0
+WR1:
 iload 1
 ireturn
 iconst_0
@@ -65,109 +66,89 @@ invokevirtual void java.io.PrintStream.print(java.lang.String)
 getstatic java.io.PrintStream java.lang.System.out
 getstatic int fib.Fn
 invokevirtual void java.io.PrintStream.println(int)
-ldc 2
-putstatic int fib.n
-
-
 getstatic int fib.n
 ldc 2
 isub
-ifle L6
+ifle WR6
 iconst_0
-goto L7
-L6:
+goto WR7
+WR6:
 iconst_1
-L7:
-ifeq L4
+WR7:
+ifeq WR4
 ldc 10
 ldc 2
 imul
 istore 0
-
-
 getstatic int fib.n
 ldc 2
 isub
-ifeq L10
+ifeq WR10
 iconst_0
-goto L11
-L10:
+goto WR11
+WR10:
 iconst_1
-L11:
-ifeq L8
+WR11:
+ifeq WR8
 getstatic java.io.PrintStream java.lang.System.out
 iload 0
 invokevirtual void java.io.PrintStream.println(int)
-goto L9
+goto WR9
 nop
-L8:
+WR8:
 getstatic java.io.PrintStream java.lang.System.out
 ldc "n < 2"
 invokevirtual void java.io.PrintStream.println(java.lang.String)
 nop
-L9:
-
-
-
-
+WR9:
 getstatic int fib.Fn
 ldc 5
 isub
-ifgt L14
+ifgt WR14
 iconst_0
-goto L15
-L14:
+goto WR15
+WR14:
 iconst_1
-L15:
-ifeq L12
-
-
+WR15:
+ifeq WR12
 getstatic int fib.Fn
 ldc 10
 isub
-ifgt L18
+ifgt WR18
 iconst_0
-goto L19
-L18:
+goto WR19
+WR18:
 iconst_1
-L19:
-ifeq L16
-
-
+WR19:
+ifeq WR16
 getstatic int fib.Fn
 ldc 15
 isub
-ifgt L22
+ifgt WR22
 iconst_0
-goto L23
-L22:
+goto WR23
+WR22:
 iconst_1
-L23:
-ifeq L20
+WR23:
+ifeq WR20
 getstatic java.io.PrintStream java.lang.System.out
 ldc "Fn > 15"
 invokevirtual void java.io.PrintStream.println(java.lang.String)
-goto L21
+goto WR21
 nop
-L20:
+WR20:
 getstatic java.io.PrintStream java.lang.System.out
 ldc "10 < Fn < 15"
 invokevirtual void java.io.PrintStream.println(java.lang.String)
 nop
-L21:
-
-
+WR21:
 nop
-L16:
-
-
+WR16:
 nop
-L12:
-
-
-goto L5
+WR12:
+goto WR5
 nop
-L4:
+WR4:
 ldc 20
 istore 1
 ldc 80
@@ -192,9 +173,7 @@ getstatic java.io.PrintStream java.lang.System.out
 iload 2
 invokevirtual void java.io.PrintStream.println(int)
 nop
-L5:
-
-
+WR5:
 getstatic java.io.PrintStream java.lang.System.out
 ldc "global constant test = "
 invokevirtual void java.io.PrintStream.print(java.lang.String)
