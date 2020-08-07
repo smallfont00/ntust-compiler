@@ -14,7 +14,7 @@ make
 ## 使用說明
 ```
 ./parser < testcase/fib.scala > fib.jasm
-javaa fib.jasm ``
+javaa fib.jasm 
 java fib 
 ```
 
