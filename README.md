@@ -1,5 +1,5 @@
 # Compiler Project NTUST
-## 作者: 陳泳峰 B10615004
+## 作者: [HaHa, You can still check this from commit history]
 
 ## 變動:
 1.1 整個symbol table換掉  
